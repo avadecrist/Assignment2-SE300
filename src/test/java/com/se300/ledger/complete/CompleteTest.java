@@ -1,4 +1,10 @@
 package com.se300.ledger.complete;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import com.se300.ledger.Ledger;
+import com.se300.ledger.Account;
+import com.se300.ledger.LedgerException;
 
 public class CompleteTest {
 
@@ -8,9 +14,20 @@ public class CompleteTest {
      * 3. Produce Quality Report
      */
 
+    @ParameterizedTest
+    @ValueSource(strings = {"Awoh", "Ava", "Zach", "Kal"})
     void parameterizedValueSourcesTest(String value) {
-        // TODO: Complete this test to demonstrate parameterized testing with simple value sources
-    }
+        // Using createAccount() from Ledger.java to test if accounts can be created with different names
+        Ledger.reset();
+        Ledger ledger = Ledger.getInstance("myTest", "Testing createAccount", "randomSeed");
+
+        // Creates an account and catches exception if thrown
+        Account account = assertDoesNotThrow(() -> ledger.createAccount(value), "Should not throw exception for valid account names");
+
+        assertNotNull(account, "Account should be successfully created.");
+        assertEquals(value, account.getAddress(), "Account address should match the provided value"); 
+        assertEquals(0, account.getBalance(), "Account balance should be 0");  
+    }   
 
     void parameterizedComplexSourcesTest(String str, int num) {
         // TODO: Complete this test to demonstrate parameterized testing with complex sources like CSV, method sources, etc.
