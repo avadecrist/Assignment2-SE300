@@ -46,11 +46,27 @@ public class CompleteTest {
         // Creates an account
         Account account = new Account(str, num);
 
-        // Assertions
+        // Basic Assertions
         assertEquals(str, account.getAddress(), "Account address should match the provided address");
         assertEquals(num, account.getBalance(), "Account balance should match the provided value");
         assertNotNull(account.getAddress(), "Account address should be inputted");
         assertNotNull(account.getBalance(), "Account balance should be inputted and of type Integer");
+        
+        // Testing that the address is modifiable
+        String newAddress = str + "_new";
+        account.setAddress(newAddress);
+        assertEquals(newAddress, account.getAddress(), "Address should be modifiable");
+
+        // Testing that the balance is modifiable
+        Integer newBalance = num + 100;
+        account.setBalance(newBalance);
+        assertEquals(newBalance, account.getBalance(), "Balance should be modifiable");
+
+        // Testing that the clone method works by comparing account address and balance to the cloned ones
+        Object cloned = account.clone();
+        Account clonedAccount = (Account) cloned;
+        assertEquals(account.getAddress(), clonedAccount.getAddress(), "Accounts should have the same address");
+        assertEquals(account.getBalance(), clonedAccount.getBalance(), "Accounts should have the same balance"); 
     }
 
 
