@@ -1,6 +1,7 @@
 package com.se300.ledger.complete;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import com.se300.ledger.Ledger;
 import com.se300.ledger.Account;
@@ -17,20 +18,39 @@ public class CompleteTest {
     @ParameterizedTest
     @ValueSource(strings = {"Awoh", "Ava", "Zach", "Kal"})
     void parameterizedValueSourcesTest(String value) {
-        // Using createAccount() from Ledger.java to test if accounts can be created with different names
+        // Using createAccount() from Ledger class to test if accounts can be created with different names
+
+        // Resets ledger
         Ledger.reset();
+
+        // Creates new ledger
         Ledger ledger = Ledger.getInstance("myTest", "Testing createAccount", "randomSeed");
 
         // Creates an account and catches exception if thrown
         Account account = assertDoesNotThrow(() -> ledger.createAccount(value), "Should not throw exception for valid account names");
 
+        // Assertions
         assertNotNull(account, "Account should be successfully created.");
         assertEquals(value, account.getAddress(), "Account address should match the provided value"); 
         assertEquals(0, account.getBalance(), "Account balance should be 0");  
     }   
 
+    @ParameterizedTest
+    @CsvSource({"Awoh, 650", "Ava, 475", "Zach, 560", "Kal, 970"})
     void parameterizedComplexSourcesTest(String str, int num) {
-        // TODO: Complete this test to demonstrate parameterized testing with complex sources like CSV, method sources, etc.
+        // Using Account class
+
+        // Resets ledger
+        Ledger.reset();
+
+        // Creates an account
+        Account account = new Account(str, num);
+
+        // Assertions
+        assertEquals(str, account.getAddress(), "Account address should match the provided address");
+        assertEquals(num, account.getBalance(), "Account balance should match the provided value");
+        assertNotNull(account.getAddress(), "Account address should be inputted");
+        assertNotNull(account.getBalance(), "Account balance should be inputted and of type Integer");
     }
 
 
