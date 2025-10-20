@@ -1,0 +1,80 @@
+Creating Ledger: test test ledger 2025 chapman
+Creating Account: mary
+Creating Account: bob
+Creating Account: bill
+Creating Account: frank
+Creating Account: jane
+Getting Balance for: mary
+Failed due to: Account Is Not Committed to a Block
+Processing Transaction: 1 1000 10 fund account master mary 
+Processing Transaction: 2 1000 10 fund account master bob 
+Processing Transaction: 3 1000 10 fund account master bill 
+Processing Transaction: 4 1000 10 fund account master frank 
+Processing Transaction: 5 1000 10 fund account master mary 
+Getting Balance for: mary
+Failed due to: Account Is Not Committed to a Block
+Getting All Balances
+No Account Has Been Committed
+Processing Transaction: 6 1000 10 fund account master bob 
+Processing Transaction: 7 1000 10 fund account master bill 
+Processing Transaction: 8 1000 10 fund account master frank 
+Processing Transaction: 9 1000 10 fund account master mary 
+Processing Transaction: 10 1000 10 fund account master bob 
+Getting Balance for: mary
+Account Balance for: mary is 3000
+Getting Balance for: bob
+Account Balance for: bob is 3000
+Getting Balance for: bill
+Account Balance for: bill is 2000
+Getting Balance for: frank
+Account Balance for: frank is 2000
+Getting Balance for: jane
+Account Balance for: jane is 0
+Get Block: 1
+Block Number: 1 Hash: a57fb2ebc1e36bf3d08baa273b6b0bbf306368f89c9ebdbee0cd413531d2cd57 Previous Hash: 
+Transaction Id: 1, Amount: 1000, Fee: 10, Note: fund account, Payer: master, Receiver: mary
+Transaction Id: 2, Amount: 1000, Fee: 10, Note: fund account, Payer: master, Receiver: bob
+Transaction Id: 3, Amount: 1000, Fee: 10, Note: fund account, Payer: master, Receiver: bill
+Transaction Id: 4, Amount: 1000, Fee: 10, Note: fund account, Payer: master, Receiver: frank
+Transaction Id: 5, Amount: 1000, Fee: 10, Note: fund account, Payer: master, Receiver: mary
+Transaction Id: 6, Amount: 1000, Fee: 10, Note: fund account, Payer: master, Receiver: bob
+Transaction Id: 7, Amount: 1000, Fee: 10, Note: fund account, Payer: master, Receiver: bill
+Transaction Id: 8, Amount: 1000, Fee: 10, Note: fund account, Payer: master, Receiver: frank
+Transaction Id: 9, Amount: 1000, Fee: 10, Note: fund account, Payer: master, Receiver: mary
+Transaction Id: 10, Amount: 1000, Fee: 10, Note: fund account, Payer: master, Receiver: bob
+Get Transaction: 10
+Transaction ID: 10 Amount: 1000 Fee: 10 Note: fund account Payer: master Receiver: bob
+Processing Transaction: 11 200 10 september rent frank jane 
+Getting Balance for: frank
+Account Balance for: frank is 2000
+Getting Balance for: jane
+Account Balance for: jane is 0
+Processing Transaction: 12 20 10 uber bob mary 
+Processing Transaction: 13 20 10 uber bob mary 
+Processing Transaction: 14 20 10 uber bob mary 
+Processing Transaction: 15 20 10 uber bob mary 
+Processing Transaction: 16 20 10 uber bob mary 
+Processing Transaction: 17 20 10 uber bob mary 
+Processing Transaction: 18 20 10 uber bob mary 
+Processing Transaction: 19 20 10 uber bob mary 
+Processing Transaction: 20 20 10 uber bob mary 
+Getting Balance for: jane
+Account Balance for: jane is 200
+Getting Balance for: frank
+Account Balance for: frank is 1790
+Getting Balance for: mary
+Account Balance for: mary is 3180
+Getting Balance for: bob
+Account Balance for: bob is 2730
+Getting All Balances
+Account Balance for: frank is 1790
+Account Balance for: bob is 2730
+Account Balance for: mary is 3180
+Account Balance for: bill is 2000
+Account Balance for: master is 2147473547
+Account Balance for: jane is 200
+Processing Transaction: 21 5000 10 food bob mary 
+Failed due to: Payer Does Not Have Required Funds
+Processing Transaction: 22 20 5 food bob mary 
+Failed due to: Transaction Fee Must Be Greater Than 10
+Validate: Valid
