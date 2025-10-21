@@ -15,8 +15,10 @@ import com.se300.ledger.Ledger;
 import com.se300.ledger.LedgerException;
 import com.se300.ledger.Transaction;
 
-import org.junit.jupiter.api.Test; //from commissions calc repo
-import static org.junit.jupiter.api.Assertions.*; //from commissions calc repo
+//from commissions calc repo
+import org.junit.jupiter.api.Test; 
+import static org.junit.jupiter.api.Assertions.*; 
+import static org.junit.jupiter.api.Assumptions.*; 
 import java.util.Arrays;
 import java.util.List;
 import java.time.Duration;
@@ -143,27 +145,7 @@ public class CompleteTest {
      * Test that the Account model can be created and used correctly.
      */
     @Test
-    void advancedAssertionsTest() throws LedgerException { //look at slide 45 in Week 7
-        // TODO: Complete this test to demonstrate advanced assertions (assertAll, assertThrows, assertTimeout, etc.)
-        // TODO: At least 5 different advanced assertions
-
-
-         //   } -------------------------------------*/
-        //4. use assertTimeout to ensure some operation completes within a time limit
-            /*----------example to follow----------
-            @Test
-            public void testAssertTimeout() {
-                // Define a task that should complete quickly
-                Executable task = () -> {
-                    // Simulate some processing
-                    Thread.sleep(50); // Simulate delay
-                };
-
-                // Assert that the task completes within 100 milliseconds
-                assertTimeout(Duration.ofMillis(100), task, 
-                        "Task should complete within 100 milliseconds");
-            } -------------------------------------*/
-    
+    void advancedAssertionsTest() throws LedgerException {
         System.out.println("\n==========================================================\nStarting advancedAssertionsTest...");
         Ledger.reset(); 
         Ledger ledger = Ledger.getInstance("test", "desc", "seed");
@@ -234,9 +216,7 @@ public class CompleteTest {
         assertTimeout(Duration.ofSeconds(1), () -> {
             ledger.processTransaction(transaction1);
         }, "Transaction processing should complete within 1 second");
-        System.out.println("Verified that processTransaction completes within the time limit");
-
-
+        System.out.println("Verified that processTransaction completes within the time limit of 1 second");
 
     }
 
@@ -246,10 +226,87 @@ public class CompleteTest {
         // TODO: At least 3 different behaviors
     }
 
-    //ava test Transaction class?
-    void assumptionsTest() {
+    //Test LedgerExceptions in processTransaction and validate method in Ledger Class
+    @Test
+    void assumptionsTest() throws LedgerException{
         // TODO: Complete this test to demonstrate using assumptions (assumeTrue, assumeFalse, assumingThat, etc.)
         // TODO: At least 3 different assumptions
+
+       
+        //ASSUMETRUE
+        System.out.println("\n==========================================================\nStarting assumptionsTest...");
+        Ledger.reset();
+        Ledger ledger = Ledger.getInstance("test", "desc", "seed");
+
+        System.out.println("Assuming it's true that a ledger instance is initialized:");
+        assumeTrue(ledger.isInitialized(), 
+                "Skipping test because ledger does not have an instance");
+
+        // create test accounts
+        Account user1 = ledger.createAccount("payer");
+        Account user2 = ledger.createAccount("receiver");
+        user1.setBalance(500);
+        user2.setBalance(550);
+
+        // create a valid transaction
+        System.out.println("Creating a valid transaction between user1 and user2 to test processTransaction results:");
+        Transaction transaction = new Transaction("tx1", 100, 20, "test payment", user1, user2);
+        
+        //Store the outcome of processing a transaction as a String
+        String processedTransaction = ledger.processTransaction(transaction);
+        System.out.println("Processed Transaction: " + processedTransaction);
+
+        // Assertions will be executed if the assumption passes
+        assertAll("Verify transaction processing results",
+            () -> assertEquals("tx1", transaction.getTransactionId(), "Transaction ID should match"),
+            () -> assertEquals(380, user1.getBalance(), "Payer balance should decrease by amount + fee"),
+            () -> assertEquals(650, user2.getBalance(), "Receiver balance should increase by amount"),
+            () -> assertTrue(transaction.getFee() >= 10, "Transaction fee must meet the minimum requirement")
+        );
+        System.out.println("Verified transaction processing results successfully.");
+
+        //ASSUMEFALSE
+        System.out.println("\n-----------------------------------------------------\nAssuming transaction list size from uncommitted block is NOT 10:");
+
+        Block uncommittedBlock = ledger.getUncommittedBlock();
+        assumeFalse(uncommittedBlock.getTransactionList().size()== 10,
+            "Skipping test: uncommitted block gets added to blockMap only after getTransactionList() reaches 10");
+
+        // executes if assumption is false
+        //validate() will throw exceptions if called before the first block is committed, because they rely on blockMap.lastEntry()
+        Transaction newTransaction = new Transaction("tx-new", 50, 15, "new test payment", user1, user2);
+        ledger.processTransaction(newTransaction); //process another transaction to ensure uncommitted block exists
+        
+        System.out.println("After processing another transaction, test to see if an exception is thrown because of the blockMap being empty ");
+        LedgerException blockMapException = assertThrows(LedgerException.class, () -> {
+            ledger.validate();
+        });
+
+        System.out.println("Exception caught as expected when calling validate() with empty block map: '" + blockMapException.getReason() + "'");
+
+
+        //ASSUMINGTHAT
+        System.out.println("\n-----------------------------------------------------\nAssuming that user1 has insufficient funds to process another transaction:");
+        
+        //try on new transaction
+        Transaction transaction2 = new Transaction("tx2", 450, 60, "test payment 2", user1, user2);
+        assumingThat(user1.getBalance() < (transaction2.getAmount() + transaction2.getFee()), () -> {
+            System.out.println("User1 balance: " + user1.getBalance() + " is less than transaction total: "
+            + (transaction2.getAmount() + transaction2.getFee()) + ". Should throw a LedgerException.");
+
+            LedgerException exception = assertThrows(LedgerException.class, () -> {
+                ledger.processTransaction(transaction2);
+            }, "Processing transaction with insufficient balance should throw LedgerException");
+            //System.out.println("LedgerException caught as expected: " + exception.getReason());
+            assertTrue(exception.getReason().contains("Payer Does Not Have Required Funds"),
+            "Should throw LedgerException for insufficient balance");
+            System.out.println("Real Reason: '" + exception.getReason() + "' matches Expected Reason: 'Payer Does Not Have Required Funds'.");
+        });
+        
+        System.out.println("Verified assumingThat() LedgerException for insufficient balance successfully.");
+
+
+        
     }
 
     //AB
