@@ -140,8 +140,8 @@ public class Ledger {
 <span class="fc" id="L140">        Account tempPayerAccount = transaction.getPayer();</span>
 <span class="fc" id="L141">        Account tempReceiverAccount = transaction.getReceiver();</span>
 
-<span class="fc bfc" id="L143" title="All 2 branches covered.">        if(transaction.getPayer().getBalance() &lt; (transaction.getAmount() + transaction.getFee()))</span>
-<span class="fc" id="L144">            throw new LedgerException(&quot;Process Transaction&quot;, &quot;Payer Does Not Have Required Funds&quot;);</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">        if(transaction.getPayer().getBalance() &lt; (transaction.getAmount() + transaction.getFee()))</span>
+<span class="nc" id="L144">            throw new LedgerException(&quot;Process Transaction&quot;, &quot;Payer Does Not Have Required Funds&quot;);</span>
 
         //Deduct balance of the payer
 <span class="fc" id="L147">        tempPayerAccount.setBalance(tempPayerAccount.getBalance()</span>
@@ -152,42 +152,42 @@ public class Ledger {
 <span class="fc" id="L152">        uncommittedBlock.getTransactionList().add(transaction);</span>
 
         //Check to see if account blocked has reached max size
-<span class="fc bfc" id="L155" title="All 2 branches covered.">        if (uncommittedBlock.getTransactionList().size() == 10){</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        if (uncommittedBlock.getTransactionList().size() == 10){</span>
 
-<span class="fc" id="L157">            List&lt;String&gt; tempTxList = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L158">            tempTxList.add(seed);</span>
+<span class="nc" id="L157">            List&lt;String&gt; tempTxList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L158">            tempTxList.add(seed);</span>
 
             //Loop through the list of transaction to get the hash
-<span class="fc bfc" id="L161" title="All 2 branches covered.">            for( Transaction tempTx : uncommittedBlock.getTransactionList()){</span>
-<span class="fc" id="L162">                tempTxList.add(tempTx.toString());</span>
-<span class="fc" id="L163">            }</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            for( Transaction tempTx : uncommittedBlock.getTransactionList()){</span>
+<span class="nc" id="L162">                tempTxList.add(tempTx.toString());</span>
+<span class="nc" id="L163">            }</span>
 
-<span class="fc" id="L165">            MerkleTrees merkleTrees = new MerkleTrees(tempTxList);</span>
-<span class="fc" id="L166">            merkleTrees.merkle_tree();</span>
-<span class="fc" id="L167">            uncommittedBlock.setHash(merkleTrees.getRoot());</span>
+<span class="nc" id="L165">            MerkleTrees merkleTrees = new MerkleTrees(tempTxList);</span>
+<span class="nc" id="L166">            merkleTrees.merkle_tree();</span>
+<span class="nc" id="L167">            uncommittedBlock.setHash(merkleTrees.getRoot());</span>
 
             //Commit uncommitted block
-<span class="fc" id="L170">            blockMap.put(uncommittedBlock.getBlockNumber(), uncommittedBlock);</span>
+<span class="nc" id="L170">            blockMap.put(uncommittedBlock.getBlockNumber(), uncommittedBlock);</span>
 
             //Get committed block
-<span class="fc" id="L173">            Block committedBlock = blockMap.lastEntry().getValue();</span>
-<span class="fc" id="L174">            Map&lt;String,Account&gt; accountMap = committedBlock.getAccountBalanceMap();</span>
+<span class="nc" id="L173">            Block committedBlock = blockMap.lastEntry().getValue();</span>
+<span class="nc" id="L174">            Map&lt;String,Account&gt; accountMap = committedBlock.getAccountBalanceMap();</span>
 
             //Get all the accounts
-<span class="fc" id="L177">            List&lt;Account&gt; accountList = new ArrayList&lt;Account&gt;(accountMap.values());</span>
+<span class="nc" id="L177">            List&lt;Account&gt; accountList = new ArrayList&lt;Account&gt;(accountMap.values());</span>
 
             //Create next block
-<span class="fc" id="L180">            uncommittedBlock = new Block(uncommittedBlock.getBlockNumber() + 1,</span>
-<span class="fc" id="L181">                    committedBlock.getHash());</span>
+<span class="nc" id="L180">            uncommittedBlock = new Block(uncommittedBlock.getBlockNumber() + 1,</span>
+<span class="nc" id="L181">                    committedBlock.getHash());</span>
 
             //Replicate accounts
-<span class="fc bfc" id="L184" title="All 2 branches covered.">            for (Account account : accountList) {</span>
-<span class="fc" id="L185">                Account tempAccount = (Account) account.clone();</span>
-<span class="fc" id="L186">                uncommittedBlock.addAccount(tempAccount.getAddress(), tempAccount);</span>
-<span class="fc" id="L187">            }</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">            for (Account account : accountList) {</span>
+<span class="nc" id="L185">                Account tempAccount = (Account) account.clone();</span>
+<span class="nc" id="L186">                uncommittedBlock.addAccount(tempAccount.getAddress(), tempAccount);</span>
+<span class="nc" id="L187">            }</span>
 
             //Link to previous block
-<span class="fc" id="L190">            uncommittedBlock.setPreviousBlock(committedBlock);</span>
+<span class="nc" id="L190">            uncommittedBlock.setPreviousBlock(committedBlock);</span>
         }
 
 <span class="fc" id="L193">        return transaction.getTransactionId();</span>
@@ -201,17 +201,17 @@ public class Ledger {
      */
     public Integer getAccountBalance(String address) throws LedgerException {
 
-<span class="fc bfc" id="L204" title="All 2 branches covered.">        if(blockMap.isEmpty()){</span>
-<span class="fc" id="L205">            throw new LedgerException(&quot;Get Account Balance&quot;, &quot;Account Is Not Committed to a Block&quot;);</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        if(blockMap.isEmpty()){</span>
+<span class="nc" id="L205">            throw new LedgerException(&quot;Get Account Balance&quot;, &quot;Account Is Not Committed to a Block&quot;);</span>
         }
 
-<span class="fc" id="L208">        Block block = blockMap.lastEntry().getValue();</span>
-<span class="fc" id="L209">        Account account = block.getAccount(address);</span>
+<span class="nc" id="L208">        Block block = blockMap.lastEntry().getValue();</span>
+<span class="nc" id="L209">        Account account = block.getAccount(address);</span>
 
-<span class="pc bpc" id="L211" title="1 of 2 branches missed.">        if (account == null)</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">        if (account == null)</span>
 <span class="nc" id="L212">            throw new LedgerException(&quot;Get Account Balance&quot;, &quot;Account Does Not Exist&quot;);</span>
         else
-<span class="fc" id="L214">            return account.getBalance();</span>
+<span class="nc" id="L214">            return account.getBalance();</span>
     }
 
     /**
@@ -220,20 +220,20 @@ public class Ledger {
      */
     public Map&lt;String,Integer&gt; getAccountBalances(){
 
-<span class="fc bfc" id="L223" title="All 2 branches covered.">        if(blockMap.isEmpty())</span>
-<span class="fc" id="L224">            return null;</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">        if(blockMap.isEmpty())</span>
+<span class="nc" id="L224">            return null;</span>
 
-<span class="fc" id="L226">        Block committedBlock = blockMap.lastEntry().getValue();</span>
-<span class="fc" id="L227">        Map&lt;String,Account&gt; accountMap = committedBlock.getAccountBalanceMap();</span>
+<span class="nc" id="L226">        Block committedBlock = blockMap.lastEntry().getValue();</span>
+<span class="nc" id="L227">        Map&lt;String,Account&gt; accountMap = committedBlock.getAccountBalanceMap();</span>
 
-<span class="fc" id="L229">        Map&lt;String, Integer&gt; balances = new HashMap&lt;&gt;();</span>
-<span class="fc" id="L230">        List&lt;Account&gt; accountList = new ArrayList&lt;&gt;(accountMap.values());</span>
+<span class="nc" id="L229">        Map&lt;String, Integer&gt; balances = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L230">        List&lt;Account&gt; accountList = new ArrayList&lt;&gt;(accountMap.values());</span>
 
-<span class="fc bfc" id="L232" title="All 2 branches covered.">        for (Account account : accountList) {</span>
-<span class="fc" id="L233">            balances.put(account.getAddress(), account.getBalance());</span>
-<span class="fc" id="L234">        }</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        for (Account account : accountList) {</span>
+<span class="nc" id="L233">            balances.put(account.getAddress(), account.getBalance());</span>
+<span class="nc" id="L234">        }</span>
 
-<span class="fc" id="L236">        return balances;</span>
+<span class="nc" id="L236">        return balances;</span>
     }
 
     /**
@@ -242,11 +242,11 @@ public class Ledger {
      * @return Block or Null
      */
     public Block getBlock (Integer blockNumber) throws LedgerException {
-<span class="fc" id="L245">        Block block = blockMap.get(blockNumber);</span>
-<span class="pc bpc" id="L246" title="1 of 2 branches missed.">        if(block == null){</span>
+<span class="nc" id="L245">        Block block = blockMap.get(blockNumber);</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">        if(block == null){</span>
 <span class="nc" id="L247">            throw new LedgerException(&quot;Get Block&quot;, &quot;Block Does Not Exist&quot;);</span>
         }
-<span class="fc" id="L249">        return block;</span>
+<span class="nc" id="L249">        return block;</span>
     }
 
     /**
@@ -256,22 +256,22 @@ public class Ledger {
      */
     public Transaction getTransaction (String transactionId){
 
-<span class="fc bfc" id="L259" title="All 2 branches covered.">        for ( Entry mapElement : blockMap.entrySet()) {</span>
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">        for ( Entry mapElement : blockMap.entrySet()) {</span>
 
             // Finding specific transactions in the committed blocks
-<span class="fc" id="L262">            Block tempBlock = (Block) mapElement.getValue();</span>
-<span class="fc bfc" id="L263" title="All 2 branches covered.">            for (Transaction transaction : tempBlock.getTransactionList()){</span>
-<span class="fc bfc" id="L264" title="All 2 branches covered.">                if(transaction.getTransactionId().equals(transactionId)){</span>
-<span class="fc" id="L265">                    return transaction;</span>
+<span class="nc" id="L262">            Block tempBlock = (Block) mapElement.getValue();</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">            for (Transaction transaction : tempBlock.getTransactionList()){</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">                if(transaction.getTransactionId().equals(transactionId)){</span>
+<span class="nc" id="L265">                    return transaction;</span>
                 }
-<span class="fc" id="L267">            }</span>
-<span class="fc" id="L268">        }</span>
+<span class="nc" id="L267">            }</span>
+<span class="nc" id="L268">        }</span>
         // Finding specific transactions in the uncommitted block
-<span class="fc bfc" id="L270" title="All 2 branches covered.">        for (Transaction transaction : uncommittedBlock.getTransactionList()){</span>
-<span class="pc bpc" id="L271" title="1 of 2 branches missed.">            if(transaction.getTransactionId().equals(transactionId)){</span>
+<span class="pc bpc" id="L270" title="1 of 2 branches missed.">        for (Transaction transaction : uncommittedBlock.getTransactionList()){</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">            if(transaction.getTransactionId().equals(transactionId)){</span>
 <span class="nc" id="L272">                return transaction;</span>
             }
-<span class="fc" id="L274">        }</span>
+<span class="nc" id="L274">        }</span>
 <span class="fc" id="L275">        return null;</span>
     }
 
@@ -291,57 +291,57 @@ public class Ledger {
      */
     public void validate() throws LedgerException {
 
-<span class="pc bpc" id="L294" title="1 of 2 branches missed.">        if(blockMap.isEmpty()){</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">        if(blockMap.isEmpty()){</span>
 <span class="nc" id="L295">            throw new LedgerException(&quot;Validate&quot;, &quot;No Block Has Been Committed&quot;);</span>
         }
 
-<span class="fc" id="L298">        Block committedBlock = blockMap.lastEntry().getValue();</span>
-<span class="fc" id="L299">        Map&lt;String,Account&gt; accountMap = committedBlock.getAccountBalanceMap();</span>
-<span class="fc" id="L300">        List&lt;Account&gt; accountList = new ArrayList&lt;&gt;(accountMap.values());</span>
+<span class="nc" id="L298">        Block committedBlock = blockMap.lastEntry().getValue();</span>
+<span class="nc" id="L299">        Map&lt;String,Account&gt; accountMap = committedBlock.getAccountBalanceMap();</span>
+<span class="nc" id="L300">        List&lt;Account&gt; accountList = new ArrayList&lt;&gt;(accountMap.values());</span>
 
-<span class="fc" id="L302">        int totalBalance = 0;</span>
-<span class="fc bfc" id="L303" title="All 2 branches covered.">        for (Account account : accountList) {</span>
-<span class="fc" id="L304">            totalBalance += account.getBalance();</span>
-<span class="fc" id="L305">        }</span>
+<span class="nc" id="L302">        int totalBalance = 0;</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">        for (Account account : accountList) {</span>
+<span class="nc" id="L304">            totalBalance += account.getBalance();</span>
+<span class="nc" id="L305">        }</span>
 
-<span class="fc" id="L307">        int fees = 0;</span>
+<span class="nc" id="L307">        int fees = 0;</span>
         String hash;
-<span class="fc bfc" id="L309" title="All 2 branches covered.">        for(Integer key : blockMap.keySet()){</span>
-<span class="fc" id="L310">            Block block = blockMap.get(key);</span>
+<span class="nc bnc" id="L309" title="All 2 branches missed.">        for(Integer key : blockMap.keySet()){</span>
+<span class="nc" id="L310">            Block block = blockMap.get(key);</span>
 
             //Check for Hash Consistency
-<span class="fc bfc" id="L313" title="All 2 branches covered.">            if(block.getBlockNumber() != 1)</span>
-<span class="pc bpc" id="L314" title="1 of 2 branches missed.">                if(!block.getPreviousHash().equals(block.getPreviousBlock().getHash())){</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">            if(block.getBlockNumber() != 1)</span>
+<span class="nc bnc" id="L314" title="All 2 branches missed.">                if(!block.getPreviousHash().equals(block.getPreviousBlock().getHash())){</span>
 <span class="nc" id="L315">                    throw new LedgerException(&quot;Validate&quot;, &quot;Hash Is Inconsistent: &quot;</span>
 <span class="nc" id="L316">                            + block.getBlockNumber());</span>
             }
 
             //Check for Transaction Count
-<span class="pc bpc" id="L320" title="1 of 2 branches missed.">            if(block.getTransactionList().size() != 10){</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">            if(block.getTransactionList().size() != 10){</span>
 <span class="nc" id="L321">                throw new LedgerException(&quot;Validate&quot;, &quot;Transaction Count Is Not 10 In Block: &quot;</span>
 <span class="nc" id="L322">                        + block.getBlockNumber());</span>
             }
 
-<span class="fc bfc" id="L325" title="All 2 branches covered.">            for(Transaction transaction : block.getTransactionList()){</span>
-<span class="fc" id="L326">                fees += transaction.getFee();</span>
-<span class="fc" id="L327">            }</span>
-<span class="fc" id="L328">        }</span>
+<span class="nc bnc" id="L325" title="All 2 branches missed.">            for(Transaction transaction : block.getTransactionList()){</span>
+<span class="nc" id="L326">                fees += transaction.getFee();</span>
+<span class="nc" id="L327">            }</span>
+<span class="nc" id="L328">        }</span>
 
-<span class="fc" id="L330">        int adjustedBalance = totalBalance + fees;</span>
+<span class="nc" id="L330">        int adjustedBalance = totalBalance + fees;</span>
 
         //Check for account balances against the total
-<span class="pc bpc" id="L333" title="1 of 2 branches missed.">        if(adjustedBalance != Integer.MAX_VALUE){</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">        if(adjustedBalance != Integer.MAX_VALUE){</span>
 <span class="nc" id="L334">            throw new LedgerException(&quot;Validate&quot;, &quot;Balance Does Not Add Up&quot;);</span>
         }
 
-<span class="fc" id="L337">    }</span>
+<span class="nc" id="L337">    }</span>
 
     /**
      * Helper method for CommandProcessor
      * @return current block we are working with
      */
     public Block getUncommittedBlock(){
-<span class="fc" id="L344">        return uncommittedBlock;</span>
+<span class="nc" id="L344">        return uncommittedBlock;</span>
     }
 
     /**

@@ -19,49 +19,49 @@ public class MerkleTrees {
     String root;
 
 
-<span class="fc" id="L22">    public MerkleTrees(List&lt;String&gt; txList) {</span>
-<span class="fc" id="L23">        this.txList = txList;</span>
-<span class="fc" id="L24">        root = &quot;&quot;;</span>
-<span class="fc" id="L25">    }</span>
+<span class="nc" id="L22">    public MerkleTrees(List&lt;String&gt; txList) {</span>
+<span class="nc" id="L23">        this.txList = txList;</span>
+<span class="nc" id="L24">        root = &quot;&quot;;</span>
+<span class="nc" id="L25">    }</span>
 
     public void merkle_tree() {
-<span class="fc" id="L28">        List&lt;String&gt; tempTxList = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L28">        List&lt;String&gt; tempTxList = new ArrayList&lt;String&gt;();</span>
 
-<span class="fc bfc" id="L30" title="All 2 branches covered.">        for (int i = 0; i &lt; this.txList.size(); i++) {</span>
-<span class="fc" id="L31">            tempTxList.add(this.txList.get(i));</span>
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        for (int i = 0; i &lt; this.txList.size(); i++) {</span>
+<span class="nc" id="L31">            tempTxList.add(this.txList.get(i));</span>
         }
 
-<span class="fc" id="L34">        List&lt;String&gt; newTxList = getNewTxList(tempTxList);</span>
-<span class="fc bfc" id="L35" title="All 2 branches covered.">        while (newTxList.size() != 1) {</span>
-<span class="fc" id="L36">            newTxList = getNewTxList(newTxList);</span>
+<span class="nc" id="L34">        List&lt;String&gt; newTxList = getNewTxList(tempTxList);</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">        while (newTxList.size() != 1) {</span>
+<span class="nc" id="L36">            newTxList = getNewTxList(newTxList);</span>
         }
 
-<span class="fc" id="L39">        this.root = newTxList.get(0);</span>
-<span class="fc" id="L40">    }</span>
+<span class="nc" id="L39">        this.root = newTxList.get(0);</span>
+<span class="nc" id="L40">    }</span>
 
     private List&lt;String&gt; getNewTxList(List&lt;String&gt; tempTxList) {
 
-<span class="fc" id="L44">        List&lt;String&gt; newTxList = new ArrayList&lt;String&gt;();</span>
-<span class="fc" id="L45">        int index = 0;</span>
-<span class="fc bfc" id="L46" title="All 2 branches covered.">        while (index &lt; tempTxList.size()) {</span>
+<span class="nc" id="L44">        List&lt;String&gt; newTxList = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L45">        int index = 0;</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">        while (index &lt; tempTxList.size()) {</span>
             // left
-<span class="fc" id="L48">            String left = tempTxList.get(index);</span>
-<span class="fc" id="L49">            index++;</span>
+<span class="nc" id="L48">            String left = tempTxList.get(index);</span>
+<span class="nc" id="L49">            index++;</span>
 
             // right
-<span class="fc" id="L52">            String right = &quot;&quot;;</span>
-<span class="fc bfc" id="L53" title="All 2 branches covered.">            if (index != tempTxList.size()) {</span>
-<span class="fc" id="L54">                right = tempTxList.get(index);</span>
+<span class="nc" id="L52">            String right = &quot;&quot;;</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">            if (index != tempTxList.size()) {</span>
+<span class="nc" id="L54">                right = tempTxList.get(index);</span>
             }
 
             // sha2 hex value
-<span class="fc" id="L58">            String sha2HexValue = getSHA2HexValue(left + right);</span>
-<span class="fc" id="L59">            newTxList.add(sha2HexValue);</span>
-<span class="fc" id="L60">            index++;</span>
+<span class="nc" id="L58">            String sha2HexValue = getSHA2HexValue(left + right);</span>
+<span class="nc" id="L59">            newTxList.add(sha2HexValue);</span>
+<span class="nc" id="L60">            index++;</span>
 
-<span class="fc" id="L62">        }</span>
+<span class="nc" id="L62">        }</span>
 
-<span class="fc" id="L64">        return newTxList;</span>
+<span class="nc" id="L64">        return newTxList;</span>
     }
 
     /**
@@ -73,14 +73,14 @@ public class MerkleTrees {
     public String getSHA2HexValue(String str) {
         byte[] cipher_byte;
         try {
-<span class="fc" id="L76">            MessageDigest md = MessageDigest.getInstance(&quot;SHA-256&quot;);</span>
-<span class="fc" id="L77">            md.update(str.getBytes());</span>
-<span class="fc" id="L78">            cipher_byte = md.digest();</span>
-<span class="fc" id="L79">            StringBuilder sb = new StringBuilder(2 * cipher_byte.length);</span>
-<span class="fc bfc" id="L80" title="All 2 branches covered.">            for (byte b : cipher_byte) {</span>
-<span class="fc" id="L81">                sb.append(String.format(&quot;%02x&quot;, b &amp; 0xff));</span>
+<span class="nc" id="L76">            MessageDigest md = MessageDigest.getInstance(&quot;SHA-256&quot;);</span>
+<span class="nc" id="L77">            md.update(str.getBytes());</span>
+<span class="nc" id="L78">            cipher_byte = md.digest();</span>
+<span class="nc" id="L79">            StringBuilder sb = new StringBuilder(2 * cipher_byte.length);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            for (byte b : cipher_byte) {</span>
+<span class="nc" id="L81">                sb.append(String.format(&quot;%02x&quot;, b &amp; 0xff));</span>
             }
-<span class="fc" id="L83">            return sb.toString();</span>
+<span class="nc" id="L83">            return sb.toString();</span>
 <span class="nc" id="L84">        } catch (Exception e) {</span>
 <span class="nc" id="L85">            e.printStackTrace();</span>
         }
@@ -94,7 +94,7 @@ public class MerkleTrees {
      * @return
      */
     public String getRoot() {
-<span class="fc" id="L97">        return this.root;</span>
+<span class="nc" id="L97">        return this.root;</span>
     }
 
 }

@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import com.se300.ledger.Account;
@@ -15,8 +14,12 @@ import com.se300.ledger.Block;
 import com.se300.ledger.Ledger;
 import com.se300.ledger.LedgerException;
 import com.se300.ledger.Transaction;
+
 import org.junit.jupiter.api.Test; //from commissions calc repo
 import static org.junit.jupiter.api.Assertions.*; //from commissions calc repo
+import java.util.Arrays;
+import java.util.List;
+import java.time.Duration;
 
 
 public class CompleteTest {
@@ -27,7 +30,250 @@ public class CompleteTest {
      * 3. Produce Quality Report
      */ 
 
-//-----------------------------------------------------------------------------------------
+
+
+    void parameterizedValueSourcesTest(String value) {
+        // TODO: Complete this test to demonstrate parameterized testing with simple value sources
+    }
+    
+    void parameterizedComplexSourcesTest(String str, int num) {
+        // TODO: Complete this test to demonstrate parameterized testing with complex sources like CSV, method sources, etc.
+    }
+
+    
+    void repeatedTest() {
+        // TODO: Complete this test to demonstrate repeated test execution
+    }
+
+    
+    void setUp() {
+        // TODO: Complete this setup method for lifecycle demonstration
+    }
+
+    
+    void tearDown() {
+        // TODO: Complete this teardown method for lifecycle demonstration
+    }
+
+    
+    void lifeCycleTest() {
+        // TODO: Complete this test to demonstrate test lifecycle with BeforeEach, AfterEach, BeforeAll, AfterAll
+            //Use @BeforeEach for Ledger.reset() before each test HERE or in methodOrderTest()?
+    }
+
+    
+    void conditionalTest() {
+        // TODO: Complete this test to demonstrate conditional test execution based on condition
+    }
+
+    
+    void taggedTest() {
+        // TODO: Complete this test to demonstrate test tagging for selective execution
+    }
+
+    
+    class NestedTestClass {
+        void nestedTest() {
+            // TODO: Complete this test to demonstrate nested test classes
+        }
+    }
+
+    /**
+     * Test that the Block model can be created and used correctly.
+     */
+    @Test
+    void basicAssertionsTest() {
+        // TODO: Complete this test to demonstrate basic assertions (assertEquals, assertTrue, assertFalse, assertNull, assertNotNull)
+        // TODO: At least 5 different basic assertions
+
+        // Reset ledger to ensure test isolation
+        System.out.println("\n==========================================================\nStarting basicAssertionsTest...");
+        Ledger.reset(); 
+        Ledger ledger = Ledger.getInstance("test", "desc", "seed");
+        
+    
+    // Create a block and check its properties:
+        System.out.println("Creating a block to test its properties");
+        Block blockTest = new Block(2, "prev-hash-123"); 
+        assertEquals(2, blockTest.getBlockNumber(), "Block number should be 2");
+        assertEquals("prev-hash-123", blockTest.getPreviousHash(), "Previous hash should be 'prev-hash-123'");
+
+        System.out.println("Testing the set and get hash methods");
+        blockTest.setHash("hash-abc");
+        assertNotEquals("prev-hash-123", blockTest.getHash(), "The current has was updated so it should not equal the previous hash");
+
+        System.out.println("Adding accounts and verifying they are retrievable");
+        Account kal = new Account("kal", 100);
+        Account zach = new Account("zach", 250);
+        blockTest.addAccount(kal.getAddress(), kal);
+        blockTest.addAccount(zach.getAddress(), zach);
+
+        System.out.println("Testing getAccount, getAddress, and getBalance based on Block");
+        Account gotKal = blockTest.getAccount("kal");
+        assertNotNull(gotKal, "The account gotKal should not be null");
+        assertEquals("kal", gotKal.getAddress(), "Account address should be 'kal'");
+        assertEquals(100, gotKal.getBalance(), "Account balance should be 100");
+
+        System.out.println("Testing if map of accounts contains entries using getAccountBalanceMap");
+        assertTrue(blockTest.getAccountBalanceMap().containsKey("kal"), "Account map should contain kal");
+        assertTrue(blockTest.getAccountBalanceMap().containsKey("zach"), "Account map should contain zach");
+
+        System.out.println("Testing previous block linking");
+        Block prevBlock = new Block(1, "prev-prev");
+        prevBlock.setHash("prevHashVal");
+        blockTest.setPreviousBlock(prevBlock);
+        assertSame(prevBlock, blockTest.getPreviousBlock(), "Previous block should be the same instance as prevBlock"); //Verifies that two references point to the same object
+
+        System.out.println("Testing transaction list: add a transaction directly and verify content");
+        Transaction transaction = new Transaction("1", 10, 1, "note", kal, zach);
+        blockTest.getTransactionList().add(transaction);
+        assertEquals(1, blockTest.getTransactionList().size());
+        
+        Transaction transactionToCheck = blockTest.getTransactionList().get(0);
+        assertEquals("1", transactionToCheck.getTransactionId(), "Transaction ID should be '1'");
+        assertEquals(10, transactionToCheck.getAmount(), "Transaction amount should be 10");
+
+        System.out.println("Testing if toString includes the payer/receiver addresses");
+        assertTrue(transactionToCheck.toString().contains("Payer: kal"), "Transaction string should include kal");
+        assertTrue(transactionToCheck.toString().contains("Receiver: zach"), "Transaction string should include zach");
+    }
+
+    
+    /**
+     * Test that the Account model can be created and used correctly.
+     */
+    @Test
+    void advancedAssertionsTest() throws LedgerException { //look at slide 45 in Week 7
+        // TODO: Complete this test to demonstrate advanced assertions (assertAll, assertThrows, assertTimeout, etc.)
+        // TODO: At least 5 different advanced assertions
+
+
+         //   } -------------------------------------*/
+        //4. use assertTimeout to ensure some operation completes within a time limit
+            /*----------example to follow----------
+            @Test
+            public void testAssertTimeout() {
+                // Define a task that should complete quickly
+                Executable task = () -> {
+                    // Simulate some processing
+                    Thread.sleep(50); // Simulate delay
+                };
+
+                // Assert that the task completes within 100 milliseconds
+                assertTimeout(Duration.ofMillis(100), task, 
+                        "Task should complete within 100 milliseconds");
+            } -------------------------------------*/
+    
+        System.out.println("\n==========================================================\nStarting advancedAssertionsTest...");
+        Ledger.reset(); 
+        Ledger ledger = Ledger.getInstance("test", "desc", "seed");
+
+        // 1. Test duplicate account creation throws exception
+        System.out.println("Testing if duplicate account creation throws LedgerException");
+        Account acc1 = ledger.createAccount("ava");
+        assertThrows(LedgerException.class, () -> {
+            ledger.createAccount("ava");
+        }, "Adding an account that already exist should throw an exception");
+        
+        // 2. Verify adding an account that doesn't already exist doesn't throw an exception
+        System.out.println("Testing that adding a new account will not throw LedgerException");
+        assertDoesNotThrow(() -> {
+            ledger.createAccount("ab");
+        }, "Adding an account that does not already exist should not throw an exception");
+
+        // setting up accounts as blockchain
+        System.out.println("Setting up accounts as blocks to further test account properties");
+        Account acc2 = ledger.createAccount("kalyan");
+        Block block = new Block(3, "prev-hash-number");
+        block.addAccount(acc1.getAddress(), acc1);
+        block.addAccount(acc2.getAddress(), acc2);
+        // 3. Use assertAll to test multiple properties about Account
+        System.out.println("Using assertAll to verify multiple account properties at once");
+        assertAll("Account properties",
+            () -> assertEquals("ava", acc1.getAddress(), "Account name should match"),
+            () -> assertNotNull(acc1.getAddress(), "Account address should not be null"),
+            () -> assertEquals(acc1.getBalance(), 0, "New account balance should be zero"),
+            () -> assertNotEquals(acc1.getAddress(), acc2.getAddress(), "Different accounts should have different addresses"),
+            () -> assertEquals(block.getAccount(acc1.getAddress()), acc1, "The account retrieved from block should match the one added")
+        );
+
+        // 4. Use assertIterableEquals() to verify two lists of transactions are the same
+        System.out.println("Verifying two lists of transactions are the same:");
+        // Create lists of transaction
+        Transaction transaction1 = new Transaction("tx1", 50, 11, "transaction test", acc1, acc2);
+        System.out.println("Created transaction1: " + transaction1);
+        Transaction transaction2 = new Transaction("tx2", 100, 11, "transaction test 2", acc2, acc1);
+        System.out.println("Created transaction2: " + transaction2);
+        block.getTransactionList().add(transaction1);
+        System.out.println("Added transaction1 to block");
+        block.getTransactionList().add(transaction2);
+        System.out.println("Added transaction2 to block");
+
+        List<Transaction> expectedTransactions = Arrays.asList(transaction1, transaction2);
+        System.out.println("Created expected transactions list");
+        List<Transaction> actualtransactions = block.getTransactionList();
+        System.out.println("Retrieved actual transactions list from block");
+
+        // Test that the lists are equal
+        assertIterableEquals(expectedTransactions, actualtransactions,
+                "Transaction list should match expected transactions");
+        System.out.println("Verified that expected and actual transaction lists are equal");
+
+        // 5. Use assertTimeout to ensure processTransaction method completes within a time limit
+        System.out.println("Testing that processTransaction completes within a time limit");
+        acc1.setBalance(500); // Set initial balance for payer
+        acc2.setBalance(300); // Set initial balance for receiver
+        Transaction transactionToProcess = new Transaction("tx-process", 30, 15, "process test", acc1, acc2);
+
+        System.out.println("Processing transaction: " + transactionToProcess.getTransactionId());
+        System.out.println("Payer: " + transactionToProcess.getPayer().getAddress());
+        System.out.println("Receiver: " + transactionToProcess.getReceiver().getAddress());
+        System.out.println("Amount: " + transactionToProcess.getAmount());
+
+
+        assertTimeout(Duration.ofSeconds(1), () -> {
+            ledger.processTransaction(transaction1);
+        }, "Transaction processing should complete within 1 second");
+        System.out.println("Verified that processTransaction completes within the time limit");
+
+
+
+    }
+
+    // test CommandProcessor, W8 or W9
+    void mockBehaviorTest() {
+        // TODO: Complete this test to demonstrate configuring mock behavior (when/then, doReturn/when, etc.)
+        // TODO: At least 3 different behaviors
+    }
+
+    //ava test Transaction class?
+    void assumptionsTest() {
+        // TODO: Complete this test to demonstrate using assumptions (assumeTrue, assumeFalse, assumingThat, etc.)
+        // TODO: At least 3 different assumptions
+    }
+
+    //AB
+    void mockVerificationTest() {
+        // TODO: Complete this test to demonstrate verifying mock interactions (verify, times, never, etc.)
+        // TODO: At least 3 different interactions
+    }
+
+    //kal
+    void mockArgumentMatchersTest() {
+        // TODO: Complete this test to demonstrate using argument matchers with mocks (any(), eq(), etc.)
+        // TODO: At least 3 different argument matchers
+    }
+
+    //kal
+    void methodOrderTest() {
+        // TODO: Complete this test to demonstrate test method ordering using @TestMethodOrder and @Order annotations
+            // Use @TestMethodOrder(MethodOrderer.OrderAnnotation.class) at the top of CompleteTest Class level?
+            // Order all the unit tests accordingly
+            // use methodOrderTest to verify the ordering happened as planned (refer to verifyExecutionOrder method in ex. repo)
+    }
+
+
+    //-----------------------------------------------------------------------------------------
 // @Test
 //     void reproduceDriverOutput() throws Exception {
 //         Ledger.reset();
@@ -73,171 +319,5 @@ public class CompleteTest {
 //     }
     //-----------------------------------------------------------------------------------------
 
-
-    //AB
-    void parameterizedValueSourcesTest(String value) {
-        // TODO: Complete this test to demonstrate parameterized testing with simple value sources
-    }
-
-    //AB
-    void parameterizedComplexSourcesTest(String str, int num) {
-        // TODO: Complete this test to demonstrate parameterized testing with complex sources like CSV, method sources, etc.
-    }
-
-    //AB
-    void repeatedTest() {
-        // TODO: Complete this test to demonstrate repeated test execution
-    }
-
-    //zach
-    void setUp() {
-        // TODO: Complete this setup method for lifecycle demonstration
-    }
-
-    //zach
-    void tearDown() {
-        // TODO: Complete this teardown method for lifecycle demonstration
-    }
-
-    //zach
-    void lifeCycleTest() {
-        // TODO: Complete this test to demonstrate test lifecycle with BeforeEach, AfterEach, BeforeAll, AfterAll
-            //Use @BeforeEach for Ledger.reset() before each test HERE or in methodOrderTest()?
-    }
-
-    //zach
-    void conditionalTest() {
-        // TODO: Complete this test to demonstrate conditional test execution based on condition
-    }
-
-    //kal
-    void taggedTest() {
-        // TODO: Complete this test to demonstrate test tagging for selective execution
-    }
-
-    //kal
-    class NestedTestClass {
-        void nestedTest() {
-            // TODO: Complete this test to demonstrate nested test classes
-        }
-    }
-
-    
-    /**
-     * Test that the Block model can be created and used correctly.
-     */
-    @Test
-    void basicAssertionsTest() {//throws LedgerException {
-        // TODO: Complete this test to demonstrate basic assertions (assertEquals, assertTrue, assertFalse, assertNull, assertNotNull)
-        // TODO: At least 5 different basic assertions
-
-        // Reset ledger to ensure test isolation
-        Ledger.reset(); 
-        Ledger ledger = Ledger.getInstance("test", "desc", "seed");
-
-
-        // Account acc = ledger.createAccount("alice");
-        // assertNotNull(acc, "Account should not be null"); //should be true: acc is not null
-        // assertEquals("alice", acc.getAddress(), "Account address should be equal to 'alice'"); //should be true: address is "alice"
-        // System.out.println("Account Address: " + acc.getAddress() + " which should be equal to 'alice'");
-        // assertEquals(0, acc.getBalance(), "Account balance should be equal to 0"); //should be true: initial balance is 0
-
-        // // Test duplicate account creation throws exception (maybe don't use in real test?)
-        // LedgerException ex = assertThrows(LedgerException.class, () -> ledger.createAccount("alice"));
-        // assertTrue(ex.getReason().contains("Account Already Exists"), "Exception message should contain 'Account Already Exists'");
-    
-    // Create a block and check its properties:
-        // create a block
-        Block blockTest = new Block(2, "prev-hash-123"); //test parameters
-        assertEquals(2, blockTest.getBlockNumber());
-        assertEquals("prev-hash-123", blockTest.getPreviousHash());
-
-        // testing the set and get hash methods
-        blockTest.setHash("hash-abc");
-        assertNotEquals("prev-hash-123", blockTest.getHash());
-
-        // add accounts and verify they are retrievable
-        Account kal = new Account("kal", 100);
-        Account zach = new Account("zach", 250);
-        blockTest.addAccount(kal.getAddress(), kal);
-        blockTest.addAccount(zach.getAddress(), zach);
-
-        // testing getAccount, getAddress, and getBalance based on Block
-        Account gotKal = blockTest.getAccount("kal");
-        assertNotNull(gotKal);
-        assertEquals("kal", gotKal.getAddress());
-        assertEquals(100, gotKal.getBalance());
-
-        // testing if map of accounts contains entries using getAccountBalanceMap
-        assertTrue(blockTest.getAccountBalanceMap().containsKey("kal"));
-        assertTrue(blockTest.getAccountBalanceMap().containsKey("zach"));
-
-        // testing previous block linking
-        Block prevBlock = new Block(1, "prev-prev");
-        prevBlock.setHash("prevHashVal");
-        blockTest.setPreviousBlock(prevBlock);
-        assertSame(prevBlock, blockTest.getPreviousBlock()); //Verifies that two references point to the same object
-        //assertEquals("prevHashVal", blockTest.getPreviousBlock().getHash()); //maybe don't need both
-    }
-
-    
-    /**
-     * Test that the Transaction model can be created and used correctly.
-     */
-    @Test
-    void advancedAssertionsTest() { //look at slide 45 in Week 7
-        // TODO: Complete this test to demonstrate advanced assertions (assertAll, assertThrows, assertTimeout, etc.)
-        // TODO: At least 5 different advanced assertions
-
-        // testing transaction list: add a transaction directly and verify content
-        Block block = new Block(3, "prev-hash-number");
-        Account ava = new Account("ava", 200);
-        Account ab = new Account("ab", 400);
-        block.addAccount(ava.getAddress(), ava);
-        block.addAccount(ab.getAddress(), ab);
-
-        Transaction transaction = new Transaction("tx1", 10, 1, "note", ava, ab);
-        block.getTransactionList().add(transaction);
-
-        assertEquals(1, block.getTransactionList().size());
-        Transaction gotTx = block.getTransactionList().get(0);
-        assertEquals("tx1", gotTx.getTransactionId());
-        assertEquals(10, gotTx.getAmount());
-        // assert toString includes the payer/receiver addresses
-        assertTrue(gotTx.toString().contains("Payer: ava"));
-        assertTrue(gotTx.toString().contains("Receiver: ab"));
-        
-    }
-
-    // test CommandProcessor
-    void mockBehaviorTest() {
-        // TODO: Complete this test to demonstrate configuring mock behavior (when/then, doReturn/when, etc.)
-        // TODO: At least 3 different behaviors
-    }
-
-    //ava test Transaction class?
-    void assumptionsTest() {
-        // TODO: Complete this test to demonstrate using assumptions (assumeTrue, assumeFalse, assumingThat, etc.)
-        // TODO: At least 3 different assumptions
-    }
-
-    //AB
-    void mockVerificationTest() {
-        // TODO: Complete this test to demonstrate verifying mock interactions (verify, times, never, etc.)
-        // TODO: At least 3 different interactions
-    }
-
-    //kal
-    void mockArgumentMatchersTest() {
-        // TODO: Complete this test to demonstrate using argument matchers with mocks (any(), eq(), etc.)
-        // TODO: At least 3 different argument matchers
-    }
-
-    //kal
-    void methodOrderTest() {
-        // TODO: Complete this test to demonstrate test method ordering using @TestMethodOrder and @Order annotations
-            // Use @TestMethodOrder(MethodOrderer.OrderAnnotation.class) at the top of CompleteTest Class level?
-            // Order all the unit tests accordingly
-            // use methodOrderTest to verify the ordering happened as planned (refer to verifyExecutionOrder method in ex. repo)
-    }
 }
+
