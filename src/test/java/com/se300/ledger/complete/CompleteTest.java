@@ -1,11 +1,16 @@
 package com.se300.ledger.complete;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Answers.valueOf;
+
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import com.se300.ledger.Ledger;
 import com.se300.ledger.Account;
 import com.se300.ledger.LedgerException;
+import com.se300.ledger.Block;
+
 
 public class CompleteTest {
 
@@ -69,9 +74,44 @@ public class CompleteTest {
         assertEquals(account.getBalance(), clonedAccount.getBalance(), "Accounts should have the same balance"); 
     }
 
-
+    @RepeatedTest(4)
     void repeatedTest() {
-        // TODO: Complete this test to demonstrate repeated test execution
+        // Resets Ledger
+        Ledger.reset();
+
+        // Necessary variables
+        int blockNum = (int) (Math.random() * 100) + 1;
+        String prevHash = String.valueOf(Math.random());
+
+        // Creates new block
+        Block block = new Block(blockNum, prevHash);
+
+        // Testing that the hash is modifiable
+        String testHash = String.valueOf(blockNum);
+        block.setHash(testHash);
+        assertEquals(testHash, block.getHash(), "Hash should be modifiable");
+
+        // Testing adding an account
+
+        // Creating a new account
+        Account testAccount = new Account("abAccount", 750);
+        // Adding to block
+        block.addAccount(testAccount.getAddress(), testAccount);
+        // Creating a variable to represent testAccount that was added being retrieved
+        Account retrievedAccount = block.getAccount(testAccount.getAddress());
+        // Checking if account was added
+        assertNotNull(retrievedAccount, "Account should be added.");
+        
+        // Basic Assertions
+        assertNotNull(block, "Block should be created successfully");
+        assertEquals(blockNum, block.getBlockNumber(), "Block number should match inputted number.");
+        assertEquals(prevHash, block.getPreviousHash(), "Hash number should match inputted hash number");
+        assertEquals(testAccount.getAddress(), retrievedAccount.getAddress(), "Retrieved account should have same address as test account");
+        assertEquals(testAccount.getBalance(), retrievedAccount.getBalance(), "Retrieved account balance should have the same balance as test account");
+         
+
+        
+
     }
 
 
