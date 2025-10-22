@@ -14,14 +14,14 @@ import com.se300.ledger.Block;
 import com.se300.ledger.Ledger;
 import com.se300.ledger.LedgerException;
 import com.se300.ledger.Transaction;
-
-//from commissions calc repo
+import com.se300.ledger.MerkleTrees;
 import org.junit.jupiter.api.Test; 
 import static org.junit.jupiter.api.Assertions.*; 
 import static org.junit.jupiter.api.Assumptions.*; 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.time.Duration;
+import org.mockito.Mockito;
+import static org.mockito.Mockito.*;
 
 
 public class CompleteTest {
@@ -31,7 +31,6 @@ public class CompleteTest {
      * 2. Produce/Print Identical Results to Command Line DriverTest
      * 3. Produce Quality Report
      */ 
-
 
 
     void parameterizedValueSourcesTest(String value) {
@@ -220,19 +219,77 @@ public class CompleteTest {
 
     }
 
-    // test CommandProcessor, W8 or W9
-    void mockBehaviorTest() {
+    /**
+     * Test demonstrating configuring mock behavior for Transactions, MerkleTree, and Ledger (when/then, doReturn/when, etc.)
+     */
+    @Test
+    void mockBehaviorTest() throws LedgerException{
         // TODO: Complete this test to demonstrate configuring mock behavior (when/then, doReturn/when, etc.)
         // TODO: At least 3 different behaviors
+
+        System.out.println("\n==========================================================\nStarting mockBehaviorTest...");
+        // Create a mock Ledger
+        Ledger.reset();
+        Ledger ledger = Ledger.getInstance("Main", "Mock Test Ledger", "seed123");
+
+        // 1: Mock a Transaction and define behavior
+        Transaction mockTx = mock(Transaction.class);
+        Account mockPayer = mock(Account.class);
+        Account mockReceiver = mock(Account.class);
+
+        // when(...) → thenReturn(...) behavior
+        System.out.println("Setting up mock Transaction behavior using when/thenReturn");
+        when(mockTx.getAmount()).thenReturn(100);
+        when(mockTx.getFee()).thenReturn(10);
+        when(mockTx.getNote()).thenReturn("Unit test transaction");
+        when(mockTx.getTransactionId()).thenReturn("tx001");
+        when(mockTx.getPayer()).thenReturn(mockPayer);
+        when(mockTx.getReceiver()).thenReturn(mockReceiver);
+
+        // Mock payer and receiver balances
+        when(mockPayer.getBalance()).thenReturn(Integer.MAX_VALUE);
+        when(mockReceiver.getBalance()).thenReturn(0);
+        when(mockPayer.getAddress()).thenReturn("payer");
+        when(mockReceiver.getAddress()).thenReturn("receiver");
+
+        // Add accounts to uncommitted block to simulate real use
+        ledger.getUncommittedBlock().addAccount("payer", mockPayer);
+        ledger.getUncommittedBlock().addAccount("receiver", mockReceiver);
+
+        // 2. Use doReturn(...).when(...) for method that would normally compute
+        System.out.println("Setting up mock MerkleTrees behavior using doReturn/when");
+        MerkleTrees mockMerkle = mock(MerkleTrees.class);
+        doReturn("FAKE_MERKLE_ROOT_HASH").when(mockMerkle).getRoot();
+
+        // 3. Spy on Ledger and override one of its methods
+        System.out.println("Creating a spy Ledger to override getNumberOfBlocks method");
+        Ledger spyLedger = spy(ledger);
+        doReturn(42).when(spyLedger).getNumberOfBlocks();  // fake block count
+
+        // Act
+        String txId = spyLedger.processTransaction(mockTx);
+
+        // Assert behavior
+        assertEquals("tx001", txId);  // should match mocked ID
+        assertEquals(42, spyLedger.getNumberOfBlocks()); // spy override works
+        assertEquals("FAKE_MERKLE_ROOT_HASH", mockMerkle.getRoot()); // mocked root value
+
+        // Verify interactions
+        System.out.println("Using verify to check interactions with mock objects");
+        verify(mockTx, times(2)).getTransactionId();
+        verify(mockPayer, atLeastOnce()).getBalance();
+        verify(mockReceiver, never()).setBalance(999); // ensure not misused
+
     }
 
-    //Test LedgerExceptions in processTransaction and validate method in Ledger Class
+    /**
+     * Test LedgerExceptions in processTransaction and validate method in Ledger Class
+     */
     @Test
     void assumptionsTest() throws LedgerException{
         // TODO: Complete this test to demonstrate using assumptions (assumeTrue, assumeFalse, assumingThat, etc.)
         // TODO: At least 3 different assumptions
 
-       
         //ASSUMETRUE
         System.out.println("\n==========================================================\nStarting assumptionsTest...");
         Ledger.reset();
@@ -272,8 +329,8 @@ public class CompleteTest {
         assumeFalse(uncommittedBlock.getTransactionList().size()== 10,
             "Skipping test: uncommitted block gets added to blockMap only after getTransactionList() reaches 10");
 
-        // executes if assumption is false
-        //validate() will throw exceptions if called before the first block is committed, because they rely on blockMap.lastEntry()
+        // executes if assumption is in fact false
+        //validate method will throw an exception if called if blockMap is empty because it relies on blockMap.lastEntry()
         Transaction newTransaction = new Transaction("tx-new", 50, 15, "new test payment", user1, user2);
         ledger.processTransaction(newTransaction); //process another transaction to ensure uncommitted block exists
         
@@ -297,7 +354,7 @@ public class CompleteTest {
             LedgerException exception = assertThrows(LedgerException.class, () -> {
                 ledger.processTransaction(transaction2);
             }, "Processing transaction with insufficient balance should throw LedgerException");
-            //System.out.println("LedgerException caught as expected: " + exception.getReason());
+        
             assertTrue(exception.getReason().contains("Payer Does Not Have Required Funds"),
             "Should throw LedgerException for insufficient balance");
             System.out.println("Real Reason: '" + exception.getReason() + "' matches Expected Reason: 'Payer Does Not Have Required Funds'.");

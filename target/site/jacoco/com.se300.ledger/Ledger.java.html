@@ -138,14 +138,14 @@ public class Ledger {
         //Check for transaction specification conditions
 <span class="pc bpc" id="L139" title="2 of 4 branches missed.">        if(transaction.getAmount() &lt; 0 || transaction.getAmount() &gt; Integer.MAX_VALUE ){</span>
 <span class="nc" id="L140">            throw new LedgerException(&quot;Process Transaction&quot;, &quot;Transaction Amount Is Out of Range&quot;);</span>
-<span class="fc bfc" id="L141" title="All 2 branches covered.">        } else if (transaction.getFee() &lt; 10) {</span>
-<span class="fc" id="L142">            throw new LedgerException(&quot;Process Transaction&quot;, &quot;Transaction Fee Must Be Greater Than 10&quot;);</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">        } else if (transaction.getFee() &lt; 10) {</span>
+<span class="nc" id="L142">            throw new LedgerException(&quot;Process Transaction&quot;, &quot;Transaction Fee Must Be Greater Than 10&quot;);</span>
 <span class="pc bpc" id="L143" title="1 of 2 branches missed.">        } else if (transaction.getNote().length() &gt; 1024){</span>
 <span class="nc" id="L144">            throw new LedgerException(&quot;Process Transaction&quot;, &quot;Note Length Must Be Less Than 1024 Chars&quot;);</span>
         }
 
-<span class="fc bfc" id="L147" title="All 2 branches covered.">        if(ledger.getTransaction(transaction.getTransactionId()) != null){</span>
-<span class="fc" id="L148">            throw new LedgerException(&quot;Process Transaction&quot;, &quot;Transaction Id Must Be Unique&quot;);</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        if(ledger.getTransaction(transaction.getTransactionId()) != null){</span>
+<span class="nc" id="L148">            throw new LedgerException(&quot;Process Transaction&quot;, &quot;Transaction Id Must Be Unique&quot;);</span>
         }
 
 <span class="fc" id="L151">        Account tempPayerAccount = transaction.getPayer();</span>
@@ -279,8 +279,8 @@ public class Ledger {
 <span class="nc" id="L279">        }</span>
         // Finding specific transactions in the uncommitted block
 <span class="fc bfc" id="L281" title="All 2 branches covered.">        for (Transaction transaction : uncommittedBlock.getTransactionList()){</span>
-<span class="fc bfc" id="L282" title="All 2 branches covered.">            if(transaction.getTransactionId().equals(transactionId)){</span>
-<span class="fc" id="L283">                return transaction;</span>
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">            if(transaction.getTransactionId().equals(transactionId)){</span>
+<span class="nc" id="L283">                return transaction;</span>
             }
 <span class="fc" id="L285">        }</span>
 <span class="fc" id="L286">        return null;</span>
