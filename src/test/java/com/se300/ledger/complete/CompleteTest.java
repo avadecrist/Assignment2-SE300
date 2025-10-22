@@ -10,6 +10,10 @@ import com.se300.ledger.Ledger;
 import com.se300.ledger.Account;
 import com.se300.ledger.LedgerException;
 import com.se300.ledger.Block;
+import org.junit.jupiter.api.Test;
+import com.se300.ledger.Transaction;
+import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.*;
 
 
 public class CompleteTest {
@@ -108,10 +112,6 @@ public class CompleteTest {
         assertEquals(prevHash, block.getPreviousHash(), "Hash number should match inputted hash number");
         assertEquals(testAccount.getAddress(), retrievedAccount.getAddress(), "Retrieved account should have same address as test account");
         assertEquals(testAccount.getBalance(), retrievedAccount.getBalance(), "Retrieved account balance should have the same balance as test account");
-         
-
-        
-
     }
 
 
@@ -163,10 +163,56 @@ public class CompleteTest {
         // TODO: At least 3 different assumptions
     }
 
-
+    @Test
     void mockVerificationTest() {
-        // TODO: Complete this test to demonstrate verifying mock interactions (verify, times, never, etc.)
-        // TODO: At least 3 different interactions
+        // Create mock transaction
+        Transaction mockTransaction = mock(Transaction.class);
+        
+        // Create mock account payer object
+        Account mockPayer = mock(Account.class);
+
+        // Create mock account reciever object
+        Account mockReceiver = mock(Account.class);
+
+        // whenthenReturn statements
+        when(mockTransaction.getTransactionId()).thenReturn("tx016");
+        when(mockTransaction.getAmount()).thenReturn(600);
+        when(mockTransaction.getFee()).thenReturn(6);
+        when(mockTransaction.getNote()).thenReturn("Mock transaction note.");
+        when(mockPayer.getAddress()).thenReturn("AB");
+        when(mockReceiver.getAddress()).thenReturn("Ava");
+
+        // Method calls 
+        String transID = mockTransaction.getTransactionId();
+
+        Integer transAmount1 = mockTransaction.getAmount();
+        Integer transAmount2 = mockTransaction.getAmount();
+
+        Integer transFee1 = mockTransaction.getFee();
+        Integer transFee2 = mockTransaction.getFee();
+        Integer transFee3 = mockTransaction.getFee();
+        Integer transFee4 = mockTransaction.getFee();
+
+        String payrAddress = mockPayer.getAddress();
+
+        // Verifications
+        // Verify mockTransaction was called 
+        verify(mockTransaction).getTransactionId();
+
+        // Verify transAmount was called twice
+        verify(mockTransaction, times(2)).getAmount();
+
+        // Verify transFee was called at least twice
+        verify(mockTransaction, atLeast(2)).getFee();
+
+        // Verify transaction note was never called
+        verify(mockTransaction, never()).getNote();
+
+        // Verify payrAddress was called once
+        verify(mockPayer, times(1)).getAddress();
+
+        // Verify receiver address was never called
+        verify(mockReceiver, never()).getAddress();
     }
 
     void mockArgumentMatchersTest() {
