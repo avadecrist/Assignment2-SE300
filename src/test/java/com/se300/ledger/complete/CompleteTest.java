@@ -96,7 +96,6 @@ public class CompleteTest {
         assertEquals(testHash, block.getHash(), "Hash should be modifiable");
 
         // Testing adding an account
-
         // Creating a new account
         Account testAccount = new Account("abAccount", 750);
         // Adding to block
