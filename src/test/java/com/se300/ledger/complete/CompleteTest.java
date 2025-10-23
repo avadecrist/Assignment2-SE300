@@ -381,6 +381,78 @@ public class CompleteTest {
     void assumptionsTest() throws LedgerException{
         // TODO: Complete this test to demonstrate using assumptions (assumeTrue, assumeFalse, assumingThat, etc.)
         // TODO: At least 3 different assumptions
+
+        //ASSUMETRUE
+        System.out.println("\n==========================================================\nStarting assumptionsTest...");
+        Ledger.reset();
+        Ledger ledger = Ledger.getInstance("test", "desc", "seed");
+
+        System.out.println("Assuming it's true that a ledger instance is initialized:");
+        assumeTrue(ledger.isInitialized(), 
+                "Skipping test because ledger does not have an instance");
+
+        // create test accounts
+        Account user1 = ledger.createAccount("payer");
+        Account user2 = ledger.createAccount("receiver");
+        user1.setBalance(500);
+        user2.setBalance(550);
+
+        // create a valid transaction
+        System.out.println("Creating a valid transaction between user1 and user2 to test processTransaction results:");
+        Transaction transaction = new Transaction("tx1", 100, 20, "test payment", user1, user2);
+        
+        //Store the outcome of processing a transaction as a String
+        String processedTransaction = ledger.processTransaction(transaction);
+        System.out.println("Processed Transaction: " + processedTransaction);
+
+        // Assertions will be executed if the assumption passes
+        assertAll("Verify transaction processing results",
+            () -> assertEquals("tx1", transaction.getTransactionId(), "Transaction ID should match"),
+            () -> assertEquals(380, user1.getBalance(), "Payer balance should decrease by amount + fee"),
+            () -> assertEquals(650, user2.getBalance(), "Receiver balance should increase by amount"),
+            () -> assertTrue(transaction.getFee() >= 10, "Transaction fee must meet the minimum requirement")
+        );
+        System.out.println("Verified transaction processing results successfully.");
+
+        //ASSUMEFALSE
+        System.out.println("\n-----------------------------------------------------\nAssuming transaction list size from uncommitted block is NOT 10:");
+
+        Block uncommittedBlock = ledger.getUncommittedBlock();
+        assumeFalse(uncommittedBlock.getTransactionList().size()== 10,
+            "Skipping test: uncommitted block gets added to blockMap only after getTransactionList() reaches 10");
+
+        // executes if assumption is false
+        //validate() will throw exceptions if called before the first block is committed, because they rely on blockMap.lastEntry()
+        Transaction newTransaction = new Transaction("tx-new", 50, 15, "new test payment", user1, user2);
+        ledger.processTransaction(newTransaction); //process another transaction to ensure uncommitted block exists
+        
+        System.out.println("After processing another transaction, test to see if an exception is thrown because of the blockMap being empty ");
+        LedgerException blockMapException = assertThrows(LedgerException.class, () -> {
+            ledger.validate();
+        });
+
+        System.out.println("Exception caught as expected when calling validate() with empty block map: '" + blockMapException.getReason() + "'");
+
+
+        //ASSUMINGTHAT
+        System.out.println("\n-----------------------------------------------------\nAssuming that user1 has insufficient funds to process another transaction:");
+        
+        //try on new transaction
+        Transaction transaction2 = new Transaction("tx2", 450, 60, "test payment 2", user1, user2);
+        assumingThat(user1.getBalance() < (transaction2.getAmount() + transaction2.getFee()), () -> {
+            System.out.println("User1 balance: " + user1.getBalance() + " is less than transaction total: "
+            + (transaction2.getAmount() + transaction2.getFee()) + ". Should throw a LedgerException.");
+
+            LedgerException exception = assertThrows(LedgerException.class, () -> {
+                ledger.processTransaction(transaction2);
+            }, "Processing transaction with insufficient balance should throw LedgerException");
+            //System.out.println("LedgerException caught as expected: " + exception.getReason());
+            assertTrue(exception.getReason().contains("Payer Does Not Have Required Funds"),
+            "Should throw LedgerException for insufficient balance");
+            System.out.println("Real Reason: '" + exception.getReason() + "' matches Expected Reason: 'Payer Does Not Have Required Funds'.");
+        });
+        
+        System.out.println("Verified assumingThat() LedgerException for insufficient balance successfully.");
     }
 
     @Test
