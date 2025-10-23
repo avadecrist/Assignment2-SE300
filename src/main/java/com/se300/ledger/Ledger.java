@@ -53,6 +53,17 @@ public class Ledger {
     }
 
     /**
+     * Boolean method for conditionally checking if Ledger is initialized
+     * @return
+     */
+    public Boolean isInitialized() {
+        if (ledger == null) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Getter method for the name of the Ledger
      * @return
      */
