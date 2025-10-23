@@ -1,6 +1,0 @@
-com/se300/ledger/Account.class
-com/se300/ledger/Block.class
-com/se300/ledger/MerkleTrees.class
-com/se300/ledger/LedgerException.class
-com/se300/ledger/Transaction.class
-com/se300/ledger/Ledger.class
