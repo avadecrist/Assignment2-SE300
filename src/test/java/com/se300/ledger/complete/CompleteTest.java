@@ -108,7 +108,6 @@ public class CompleteTest {
         assertEquals(newblockNum, block.getBlockNumber(), "Block number should be modifiable.");
 
         // Testing adding an account
-
         // Creating a new account
         Account testAccount = new Account("abAccount", 750);
         // Adding to block
