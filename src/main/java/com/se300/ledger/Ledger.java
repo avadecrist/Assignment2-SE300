@@ -46,7 +46,8 @@ public class Ledger {
      * @param description
      * @param seed
      */
-    private Ledger(String name, String description, String seed) {
+    // Adjusted to public for testing cases
+    public Ledger(String name, String description, String seed) {
         this.name = name;
         this.description = description;
         this.seed = seed;
