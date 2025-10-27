@@ -38,10 +38,13 @@ public class CompleteTest {
         // Creates an account and catches exception if thrown
         Account account = assertDoesNotThrow(() -> ledger.createAccount(value), "Should not throw exception for valid account names");
 
-        // Assertions
+        // Basic Assertions
         assertNotNull(account, "Account should be successfully created.");
         assertEquals(value, account.getAddress(), "Account address should match the provided value"); 
         assertEquals(0, account.getBalance(), "Account balance should be 0");  
+        assertEquals("myTest", ledger.getName(), "Ledger address should match");
+        assertEquals("Testing createAccount", ledger.getDescription(), "Ledger description should match.");
+        assertEquals("randomSeed", ledger.getSeed(), "Ledger seed should match.");
     }   
 
     @ParameterizedTest
@@ -90,10 +93,19 @@ public class CompleteTest {
         // Creates new block
         Block block = new Block(blockNum, prevHash);
 
-        // Testing that the hash is modifiable
+        // Testing that the hash & previous hash are modifiable
         String testHash = String.valueOf(blockNum);
         block.setHash(testHash);
         assertEquals(testHash, block.getHash(), "Hash should be modifiable");
+
+        String newprevHash = String.valueOf(Math.random());
+        block.setPreviousHash(newprevHash);
+        assertEquals(newprevHash, block.getPreviousHash(), "Previous hash number should be modifiable.");
+
+        // Testing that the block number is modifiable
+        int newblockNum = blockNum + 100;
+        block.setBlockNumber(newblockNum);
+        assertEquals(newblockNum, block.getBlockNumber(), "Block number should be modifiable.");
 
         // Testing adding an account
 
@@ -105,11 +117,16 @@ public class CompleteTest {
         Account retrievedAccount = block.getAccount(testAccount.getAddress());
         // Checking if account was added
         assertNotNull(retrievedAccount, "Account should be added.");
+
+        // Testing that a block is modifiable
+        Block prevBlock = new Block(6, "granola");
+        block.setPreviousBlock(prevBlock);
+        assertEquals(prevBlock, block.getPreviousBlock(), "Block should match inputted values");
         
         // Basic Assertions
         assertNotNull(block, "Block should be created successfully");
-        assertEquals(blockNum, block.getBlockNumber(), "Block number should match inputted number.");
-        assertEquals(prevHash, block.getPreviousHash(), "Hash number should match inputted hash number");
+        assertEquals(newblockNum, block.getBlockNumber(), "Block number should match inputted number.");
+        assertEquals(newprevHash, block.getPreviousHash(), "Previous hash number should be modifiable");
         assertEquals(testAccount.getAddress(), retrievedAccount.getAddress(), "Retrieved account should have same address as test account");
         assertEquals(testAccount.getBalance(), retrievedAccount.getBalance(), "Retrieved account balance should have the same balance as test account");
     }
