@@ -80,4 +80,4 @@ Transaction Id: 19, Amount: 1000, Fee: 15, Note: fund account, Payer: mary, Rece
 Transaction Id: 20, Amount: 1000, Fee: 15, Note: fund account, Payer: mary, Receiver: sergey
 Transaction Id: 21, Amount: 100, Fee: 15, Note: fund account, Payer: mary, Receiver: sergey
 
-Process finished with exit code 0
+Process finished with exit code 0 

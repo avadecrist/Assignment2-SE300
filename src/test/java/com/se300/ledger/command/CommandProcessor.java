@@ -38,7 +38,7 @@ public class CommandProcessor {
         while (matcher.find())
             tokens.add(matcher.group(1).replace("\"", ""));
 
-        switch (tokens.get(0)) {
+        switch (tokens.get(0)) { 
             case "create-ledger" -> {
                 if(tokens.size() != 6)
                     throw new CommandProcessorException("create-ledger", "Missing Arguments");
