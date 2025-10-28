@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assumptions.*;
 // ─── Mockito for mocking, spies, argument matchers ──────────────
 import org.mockito.Mockito;
 import static org.mockito.Mockito.*;
+import org.mockito.MockedStatic;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.ArgumentMatchers.*;
 
 // ─── Java standard libraries ────────────────────────────────────
@@ -30,6 +32,8 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 // ─── Ledger project classes ─────────────────────────────────────
 import com.se300.ledger.Account;
@@ -39,6 +43,7 @@ import com.se300.ledger.LedgerException;
 import com.se300.ledger.Transaction;
 import com.se300.ledger.MerkleTrees;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class CompleteTest {
 
     /* TODO: The following
@@ -548,6 +553,11 @@ public class CompleteTest {
         // 3. Spy on Ledger and override one of its methods
         System.out.println("Creating a spy Ledger to override getNumberOfBlocks method");
         Ledger spyLedger = spy(ledger);
+        // First cover getNumberOfBlocks method
+        doCallRealMethod().when(spyLedger).getNumberOfBlocks();
+        int numberOfBlocks = spyLedger.getNumberOfBlocks();
+        assertTrue(numberOfBlocks >= 0);
+        // Now override it
         doReturn(42).when(spyLedger).getNumberOfBlocks();  // fake block count
 
         // Act
@@ -555,8 +565,20 @@ public class CompleteTest {
 
         // Assert behavior
         assertEquals("tx001", txId);  // should match mocked ID
-        assertEquals(42, spyLedger.getNumberOfBlocks()); // spy override works
+        assertEquals(42, spyLedger.getNumberOfBlocks()); // proves spy override works
         assertEquals("FAKE_MERKLE_ROOT_HASH", mockMerkle.getRoot()); // mocked root value
+
+        // Force getSHA2HexValue to catch an exception in MerkleTrees
+        System.out.println("Forcing catch branch in MerkleTrees.getSHA2HexValue via static mocking");
+        MerkleTrees realTree = new MerkleTrees(java.util.Arrays.asList("irrelevant"));
+        try (MockedStatic<MessageDigest> mocked = mockStatic(MessageDigest.class)) {
+            mocked.when(() -> MessageDigest.getInstance("SHA-256"))
+              .thenThrow(new NoSuchAlgorithmException("forced for test"));
+
+        // Directly call the helper; when MessageDigest fails
+        String hash = realTree.getSHA2HexValue("SHA-256_value");
+        assertEquals("", hash, "Expected empty string from catch branch when MessageDigest fails");
+        }
 
         // Verify interactions
         System.out.println("Using verify to check interactions with mock objects");
@@ -580,7 +602,7 @@ public class CompleteTest {
         Ledger ledger = Ledger.getInstance("test", "desc", "seed");
 
         System.out.println("Assuming it's true that a ledger instance is initialized:");
-        assumeTrue(ledger.isInitialized(), 
+        assumeTrue(ledger != null, 
                 "Skipping test because ledger does not have an instance");
 
         // create test accounts
