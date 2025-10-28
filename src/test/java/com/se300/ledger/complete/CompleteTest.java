@@ -1,44 +1,43 @@
 package com.se300.ledger.complete;
 
-//all from testing unit test to compare actual output to driver test output (which uses ledger.script)
-import static org.junit.jupiter.api.Assertions.fail;
+// ─── JUnit 5 core and extensions ───────────────────────────────
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+// ─── JUnit 5 assertions and assumptions ─────────────────────────
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
+
+// ─── Mockito for mocking, spies, argument matchers ──────────────
+import org.mockito.Mockito;
+import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.*;
+
+// ─── Java standard libraries ────────────────────────────────────
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.util.*;
 import java.util.stream.Collectors;
 
+// ─── Ledger project classes ─────────────────────────────────────
 import com.se300.ledger.Account;
 import com.se300.ledger.Block;
 import com.se300.ledger.Ledger;
 import com.se300.ledger.LedgerException;
 import com.se300.ledger.Transaction;
 import com.se300.ledger.MerkleTrees;
-import org.junit.jupiter.api.Test; 
-import static org.junit.jupiter.api.Assertions.*; 
-import static org.junit.jupiter.api.Assumptions.*; 
-import java.util.*;
-import java.time.Duration;
-import org.mockito.Mockito;
-import static org.mockito.Mockito.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Answers.valueOf;
-
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import com.se300.ledger.Ledger;
-import com.se300.ledger.Account;
-import com.se300.ledger.LedgerException;
-import com.se300.ledger.Block;
-import org.junit.jupiter.api.Test;
-import com.se300.ledger.Transaction;
-import static org.mockito.Mockito.*;
-import static org.mockito.ArgumentMatchers.*;
-
 
 public class CompleteTest {
 
@@ -159,15 +158,93 @@ public class CompleteTest {
         // TODO: Complete this test to demonstrate conditional test execution based on condition
     }
 
-    
+    // Tagged Tests
+    @Tag("Check MerkleTrees Functionality")
+    @Test
     void taggedTest() {
         // TODO: Complete this test to demonstrate test tagging for selective execution
+        List<String> txs = Arrays.asList("A", "B", "C", "D");
+        MerkleTrees tree = new MerkleTrees(txs);
+        tree.merkle_tree();
+
+        assertNotNull(tree.getRoot(), "Merkle root should not be null");
+        assertEquals(64, tree.getRoot().length(), "Merkle root should be 64 hex chars");
     }
 
-    
+    @Tag("processTransaction Block Test")
+    @Test
+    void taggedTestProcessTransaction() throws Exception {
+        // Reset ledger
+        Ledger.reset();
+        Ledger ledger = Ledger.getInstance("TagTest", "Block Commit Verification", "seedXYZ");
+
+        // Create payer and receiver accounts
+        Account payer = ledger.createAccount("payer");
+        Account receiver = ledger.createAccount("receiver");
+        payer.setBalance(100_000); // plenty of funds
+        receiver.setBalance(0);
+
+        // Add 9 transactions — should not commit yet
+        for (int i = 1; i <= 9; i++) {
+            Transaction tx = new Transaction("tx" + i, 100, 10, "Note " + i, payer, receiver);
+            ledger.processTransaction(tx);
+        }
+        assertEquals(0, ledger.getNumberOfBlocks(), 
+            "No block should be committed before the 10th transaction");
+        Transaction tx10 = new Transaction("tx10", 100, 10, "Tenth", payer, receiver);
+        ledger.processTransaction(tx10);
+        assertEquals(1, ledger.getNumberOfBlocks(), 
+            "Ledger should have committed 1 block after 10 transactions");
+        assertNotNull(ledger.getUncommittedBlock(), 
+            "Uncommitted block should be reinitialized");
+        assertNotNull(ledger.getUncommittedBlock().getPreviousBlock(),
+            "Uncommitted block should link to previous committed block");
+        assertEquals("tx10", tx10.getTransactionId(), 
+            "Last transaction ID should match expected value");
+
+        System.out.println("Tagged ledger-commit test passed successfully");
+
+        //setName
+        Ledger.reset();
+        ledger = Ledger.getInstance("Original", "Testing Ledger Name", "seed123");
+        assertEquals("Original", ledger.getName(), "Ledger name should start as 'Original'");
+        ledger.setName("UpdatedLedger");
+        assertEquals("UpdatedLedger", ledger.getName(), 
+            "Ledger name should reflect the updated value after calling setName()");
+        }
+
+    @Nested
     class NestedTestClass {
+        @Test
         void nestedTest() {
-            // TODO: Complete this test to demonstrate nested test classes
+             List<String> evenTxs = Arrays.asList("x1", "x2", "x3", "x4");
+             MerkleTrees evenTree = new MerkleTrees(evenTxs);
+             evenTree.merkle_tree();
+             assertEquals(64, evenTree.getRoot().length(), "Even-sized list should yield valid root");
+
+             List<String> oddTxs = Arrays.asList("t1", "t2", "t3");
+             MerkleTrees oddTree = new MerkleTrees(oddTxs);
+             oddTree.merkle_tree();
+             assertNotNull(oddTree.getRoot(), "Odd-sized list should still produce a root");
+        }
+    }
+
+    @Nested
+    class LedgerExceptionNestedTests {
+        @Test
+        void constructorAndGetterTest() {
+            LedgerException ex = new LedgerException("CREATE", "Invalid Input");
+            assertEquals("CREATE", ex.getAction());
+            assertEquals("Invalid Input", ex.getReason());
+        }
+
+        @Test
+        void setterMethodsTest() {
+            LedgerException ex = new LedgerException("OLD", "OLD_REASON");
+            ex.setAction("NEW");
+            ex.setReason("NEW_REASON");
+            assertEquals("NEW", ex.getAction());
+            assertEquals("NEW_REASON", ex.getReason());
         }
     }
 
@@ -507,9 +584,25 @@ public class CompleteTest {
         verify(mockReceiver, never()).getAddress();
     }
 
+    @Test
     void mockArgumentMatchersTest() {
         // TODO: Complete this test to demonstrate using argument matchers with mocks (any(), eq(), etc.)
         // TODO: At least 3 different argument matchers
+         System.out.println("\n--- Running mockArgumentMatchersTest for MerkleTrees ---");
+
+            // Spy instead of pure mock so we still use real behavior unless overridden
+        MerkleTrees spyTree = Mockito.spy(new MerkleTrees(Arrays.asList("a", "b")));
+
+            // Stub the hashing method
+        doReturn("FAKE_HASH").when(spyTree).getSHA2HexValue(anyString());
+
+            // Run Merkle tree
+        spyTree.merkle_tree();
+
+            // Verify interactions with argument matchers
+        verify(spyTree, atLeastOnce()).getSHA2HexValue(eq("ab"));       // called with exact value
+        verify(spyTree, never()).getSHA2HexValue(contains("xyz"));       // never called with unrelated input
+        verify(spyTree, atLeast(1)).getSHA2HexValue(anyString());  
     }
 
     //kal
@@ -518,7 +611,92 @@ public class CompleteTest {
             // Use @TestMethodOrder(MethodOrderer.OrderAnnotation.class) at the top of CompleteTest Class level?
             // Order all the unit tests accordingly
             // use methodOrderTest to verify the ordering happened as planned (refer to verifyExecutionOrder method in ex. repo)
+            //for merkletrees
+
     }
+
+    //method order tests for validate() in Ledger class
+    @Test
+    @Order(1)
+    void validateTransactionCountFail() throws Exception {
+        System.out.println("\n--- [1] Testing validate() transaction count failure ---");
+        Ledger.reset();
+        Ledger ledger = Ledger.getInstance("ValidateTest1", "Transaction Count Fail", "seed");
+
+        // Create a block with <10 transactions
+        Block b1 = new Block(1, "");
+        b1.setHash("HASH_A");
+        b1.getTransactionList().add(new Transaction("tx1", 5, 10, "t", new Account("payer", 5000), new Account("recv", 0)));
+
+        // Commit manually
+        var blockMap = new TreeMap<Integer, Block>();
+        blockMap.put(1, b1);
+
+        // Inject via reflection (since blockMap is private static)
+        var field = Ledger.class.getDeclaredField("blockMap");
+        field.setAccessible(true);
+        field.set(null, blockMap);
+
+        LedgerException ex = assertThrows(LedgerException.class, ledger::validate);
+        assertTrue(ex.getReason().contains("Transaction Count Is Not 10"));
+    }
+
+    @Test
+    @Order(2)
+    void validateHashInconsistentFail() throws Exception {
+        System.out.println("\n--- [2] Testing validate() hash inconsistency failure ---");
+        Ledger.reset();
+        Ledger ledger = Ledger.getInstance("ValidateTest2", "Hash fail", "seed");
+
+        Block b1 = new Block(1, "");
+        b1.setHash("AAA");
+        for (int i = 0; i < 10; i++)
+            b1.getTransactionList().add(new Transaction("txA" + i, 5, 10, "t", new Account("payer", 9999), new Account("recv", 0)));
+
+        Block b2 = new Block(2, "WRONG_HASH");
+        b2.setPreviousBlock(b1);
+        b2.setHash("BBB");
+        for (int i = 0; i < 10; i++)
+            b2.getTransactionList().add(new Transaction("txB" + i, 5, 10, "t", new Account("payer", 9999), new Account("recv", 0)));
+
+        var blockMap = new TreeMap<Integer, Block>();
+        blockMap.put(1, b1);
+        blockMap.put(2, b2);
+
+        var field = Ledger.class.getDeclaredField("blockMap");
+        field.setAccessible(true);
+        field.set(null, blockMap);
+
+        LedgerException ex = assertThrows(LedgerException.class, ledger::validate);
+        assertTrue(ex.getReason().contains("Hash Is Inconsistent"));
+    }
+
+    @Test
+    @Order(3)
+    void validateBalanceMismatchFail() throws Exception {
+        System.out.println("\n--- [3] Testing validate() balance mismatch failure ---");
+        Ledger.reset();
+        Ledger ledger = Ledger.getInstance("ValidateTest3", "Balance fail", "seed");
+
+        Block b1 = new Block(1, "");
+        b1.setHash("GOOD_HASH");
+        for (int i = 0; i < 10; i++)
+            b1.getTransactionList().add(new Transaction("txC" + i, 5, 10, "t", new Account("payer", 9999), new Account("recv", 0)));
+
+        // Modify the account balance map so totalBalance + fees ≠ Integer.MAX_VALUE
+        b1.addAccount("test", new Account("test", 1000));
+
+        var blockMap = new TreeMap<Integer, Block>();
+        blockMap.put(1, b1);
+
+        var field = Ledger.class.getDeclaredField("blockMap");
+        field.setAccessible(true);
+        field.set(null, blockMap);
+
+        LedgerException ex = assertThrows(LedgerException.class, ledger::validate);
+        assertEquals("Balance Does Not Add Up", ex.getReason());
+    }
+
 
 
     //-----------------------------------------------------------------------------------------
