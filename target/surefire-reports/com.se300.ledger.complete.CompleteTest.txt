@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: com.se300.ledger.complete.CompleteTest
 -------------------------------------------------------------------------------
-Tests run: 23, Failures: 1, Errors: 3, Skipped: 0, Time elapsed: 1.699 s <<< FAILURE! -- in com.se300.ledger.complete.CompleteTest
-com.se300.ledger.complete.CompleteTest.mockBehaviorTest -- Time elapsed: 1.193 s <<< ERROR!
+Tests run: 23, Failures: 1, Errors: 3, Skipped: 0, Time elapsed: 1.689 s <<< FAILURE! -- in com.se300.ledger.complete.CompleteTest
+com.se300.ledger.complete.CompleteTest.mockBehaviorTest -- Time elapsed: 1.168 s <<< ERROR!
 org.mockito.exceptions.base.MockitoException: 
 
 Mockito cannot mock this class: class com.se300.ledger.Transaction.
@@ -24,7 +24,7 @@ You are seeing this disclaimer because Mockito is configured to create inlined m
 You can learn about inline mocks and their limitations under item #39 of the Mockito class javadoc.
 
 Underlying exception : org.mockito.exceptions.base.MockitoException: Could not modify all classes [class java.lang.Object, class com.se300.ledger.Transaction]
-	at com.se300.ledger.complete.CompleteTest.mockBehaviorTest(CompleteTest.java:405)
+	at com.se300.ledger.complete.CompleteTest.mockBehaviorTest(CompleteTest.java:504)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
@@ -74,19 +74,19 @@ Caused by: java.lang.IllegalArgumentException: Java 25 (69) is not supported by 
 	at org.mockito.internal.creation.bytebuddy.InlineBytecodeGenerator.triggerRetransformation(InlineBytecodeGenerator.java:287)
 	... 19 more
 
-com.se300.ledger.complete.CompleteTest.taggedTestProcessTransaction -- Time elapsed: 0.015 s <<< FAILURE!
+com.se300.ledger.complete.CompleteTest.taggedTestProcessTransaction -- Time elapsed: 0.018 s <<< FAILURE!
 org.opentest4j.AssertionFailedError: Ledger name should start as 'Original' ==> expected: <Original> but was: <Main>
 	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
 	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
 	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
 	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
 	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
-	at com.se300.ledger.complete.CompleteTest.taggedTestProcessTransaction(CompleteTest.java:210)
+	at com.se300.ledger.complete.CompleteTest.taggedTestProcessTransaction(CompleteTest.java:309)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
 
-com.se300.ledger.complete.CompleteTest.mockArgumentMatchersTest -- Time elapsed: 0.044 s <<< ERROR!
+com.se300.ledger.complete.CompleteTest.mockArgumentMatchersTest -- Time elapsed: 0.049 s <<< ERROR!
 org.mockito.exceptions.base.MockitoException: 
 
 Mockito cannot mock this class: class com.se300.ledger.MerkleTrees.
@@ -107,12 +107,12 @@ OS version         : 10.0
 You are seeing this disclaimer because Mockito is configured to create inlined mocks.
 You can learn about inline mocks and their limitations under item #39 of the Mockito class javadoc.
 
-Underlying exception : org.mockito.exceptions.base.MockitoException: Could not modify all classes [class java.lang.Object, class com.se300.ledger.MerkleTrees]
-	at com.se300.ledger.complete.CompleteTest.mockArgumentMatchersTest(CompleteTest.java:594)
+Underlying exception : org.mockito.exceptions.base.MockitoException: Could not modify all classes [class com.se300.ledger.MerkleTrees, class java.lang.Object]
+	at com.se300.ledger.complete.CompleteTest.mockArgumentMatchersTest(CompleteTest.java:693)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
-Caused by: org.mockito.exceptions.base.MockitoException: Could not modify all classes [class java.lang.Object, class com.se300.ledger.MerkleTrees]
+Caused by: org.mockito.exceptions.base.MockitoException: Could not modify all classes [class com.se300.ledger.MerkleTrees, class java.lang.Object]
 	at net.bytebuddy.TypeCache.findOrInsert(TypeCache.java:168)
 	at net.bytebuddy.TypeCache$WithInlineExpunction.findOrInsert(TypeCache.java:399)
 	at net.bytebuddy.TypeCache.findOrInsert(TypeCache.java:190)
@@ -157,7 +157,7 @@ Caused by: java.lang.IllegalArgumentException: Java 25 (69) is not supported by 
 	at org.mockito.internal.creation.bytebuddy.InlineBytecodeGenerator.triggerRetransformation(InlineBytecodeGenerator.java:287)
 	... 18 more
 
-com.se300.ledger.complete.CompleteTest.mockVerificationTest -- Time elapsed: 0.064 s <<< ERROR!
+com.se300.ledger.complete.CompleteTest.mockVerificationTest -- Time elapsed: 0.070 s <<< ERROR!
 org.mockito.exceptions.base.MockitoException: 
 
 Mockito cannot mock this class: class com.se300.ledger.Transaction.
@@ -179,7 +179,7 @@ You are seeing this disclaimer because Mockito is configured to create inlined m
 You can learn about inline mocks and their limitations under item #39 of the Mockito class javadoc.
 
 Underlying exception : org.mockito.exceptions.base.MockitoException: Could not modify all classes [class java.lang.Object, class com.se300.ledger.Transaction]
-	at com.se300.ledger.complete.CompleteTest.mockVerificationTest(CompleteTest.java:538)
+	at com.se300.ledger.complete.CompleteTest.mockVerificationTest(CompleteTest.java:637)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
