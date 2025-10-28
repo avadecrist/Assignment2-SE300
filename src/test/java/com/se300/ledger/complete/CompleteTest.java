@@ -273,7 +273,6 @@ public class CompleteTest {
         System.out.println("Cleaned up test variables.");
     }
 
-
     // Tagged Tests
     @Tag("Check MerkleTrees Functionality")
     @Test
