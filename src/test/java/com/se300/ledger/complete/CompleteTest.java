@@ -13,6 +13,9 @@ import com.se300.ledger.Block;
 import org.junit.jupiter.api.Test;
 import com.se300.ledger.Transaction;
 import static org.mockito.Mockito.*;
+
+import java.util.Map;
+
 import static org.mockito.ArgumentMatchers.*;
 
 
@@ -38,13 +41,41 @@ public class CompleteTest {
         // Creates an account and catches exception if thrown
         Account account = assertDoesNotThrow(() -> ledger.createAccount(value), "Should not throw exception for valid account names");
 
+        // Testing getAccountBalance() throws exception for uncommitted accounts
+        LedgerException exception = assertThrows(LedgerException.class, () -> ledger.getAccountBalance(value), "Should throw exception for uncommitted account");
+        assertTrue(exception.getReason().contains("Account Is Not Committed to a Block"));
+
+        // Testing getAccountBalances()
+        Map<String, Integer> accBalances = ledger.getAccountBalances();
+        assertNull(accBalances, "Map of account balances should be null when all blocks are uncommitted.");
+
         // Basic Assertions
         assertNotNull(account, "Account should be successfully created.");
         assertEquals(value, account.getAddress(), "Account address should match the provided value"); 
         assertEquals(0, account.getBalance(), "Account balance should be 0");  
-        assertEquals("myTest", ledger.getName(), "Ledger address should match");
-        assertEquals("Testing createAccount", ledger.getDescription(), "Ledger description should match.");
-        assertEquals("randomSeed", ledger.getSeed(), "Ledger seed should match.");
+    
+        // Testing that the Ledger name is modifiable
+        ledger.setName("newName");
+        assertEquals("newName", ledger.getName(), "Name should be modifiable");
+
+        // Testing that the Ledger description is modifiable
+        ledger.setDescription("newDescription");
+        assertEquals("newDescription", ledger.getDescription(), "Description should be modifiable");
+
+        // Testing that the Ledger seed is modifiable
+        ledger.setSeed("newSeed");
+        assertEquals("newSeed", ledger.getSeed(), "Seed should be modifiable"); 
+
+        // Testing getNumberOfBlocks
+        int blockCount = ledger.getNumberOfBlocks();
+        assertEquals(0, blockCount, "Should have 0 blocks initially.");
+
+        // Testing getUncommittedBlock
+        Block uncommittedBlock = ledger.getUncommittedBlock();
+        assertEquals(1, uncommittedBlock.getBlockNumber(), "Should be block 1");
+
+        // Resets ledger
+        Ledger.reset();
     }   
 
     @ParameterizedTest
