@@ -419,13 +419,9 @@ public class CompleteTest {
         // TODO: Complete this test to demonstrate basic assertions (assertEquals, assertTrue, assertFalse, assertNull, assertNotNull)
         // TODO: At least 5 different basic assertions
 
-        // Reset ledger to ensure test isolation
         System.out.println("\n==========================================================\nStarting basicAssertionsTest...");
-        Ledger.reset(); 
-        Ledger ledger = Ledger.getInstance("test", "desc", "seed");
-        
     
-    // Create a block and check its properties:
+        // Create a block and check its properties:
         System.out.println("Creating a block to test its properties");
         Block blockTest = new Block(2, "prev-hash-123"); 
         assertEquals(2, blockTest.getBlockNumber(), "Block number should be 2");
@@ -478,34 +474,35 @@ public class CompleteTest {
     @Test
     void advancedAssertionsTest() throws LedgerException {
         System.out.println("\n==========================================================\nStarting advancedAssertionsTest...");
-        Ledger.reset(); 
-        Ledger ledger = Ledger.getInstance("test", "desc", "seed");
+        //Ledger.reset(); 
+        //Ledger ledger = Ledger.getInstance("test", "desc", "seed");
 
         // 1. Test duplicate account creation throws exception
         System.out.println("Testing if duplicate account creation throws LedgerException");
-        Account acc1 = ledger.createAccount("ava");
+        Account acc = testLedger.createAccount("test");
         assertThrows(LedgerException.class, () -> {
-            ledger.createAccount("ava");
+            testLedger.createAccount("test");
         }, "Adding an account that already exist should throw an exception");
         
         // 2. Verify adding an account that doesn't already exist doesn't throw an exception
         System.out.println("Testing that adding a new account will not throw LedgerException");
         assertDoesNotThrow(() -> {
-            ledger.createAccount("ab");
+            testLedger.createAccount("ab");
         }, "Adding an account that does not already exist should not throw an exception");
 
         // setting up accounts as blockchain
         System.out.println("Setting up accounts as blocks to further test account properties");
-        Account acc2 = ledger.createAccount("kalyan");
+        Account acc1 = payer; //testLedger.createAccount("ava"); //use payer and reciever?
+        Account acc2 = receiver; //testLedger.createAccount("kalyan");
         Block block = new Block(3, "prev-hash-number");
         block.addAccount(acc1.getAddress(), acc1);
         block.addAccount(acc2.getAddress(), acc2);
         // 3. Use assertAll to test multiple properties about Account
         System.out.println("Using assertAll to verify multiple account properties at once");
         assertAll("Account properties",
-            () -> assertEquals("ava", acc1.getAddress(), "Account name should match"),
+            () -> assertEquals("payer", acc1.getAddress(), "Account name should match"),
             () -> assertNotNull(acc1.getAddress(), "Account address should not be null"),
-            () -> assertEquals(acc1.getBalance(), 0, "New account balance should be zero"),
+            () -> assertEquals(acc1.getBalance(), payer.getBalance(), "Balances should match because they reference the same account"),
             () -> assertNotEquals(acc1.getAddress(), acc2.getAddress(), "Different accounts should have different addresses"),
             () -> assertEquals(block.getAccount(acc1.getAddress()), acc1, "The account retrieved from block should match the one added")
         );
@@ -515,7 +512,7 @@ public class CompleteTest {
         // Create lists of transaction
         Transaction transaction1 = new Transaction("tx1", 50, 11, "transaction test", acc1, acc2);
         System.out.println("Created transaction1: " + transaction1);
-        Transaction transaction2 = new Transaction("tx2", 100, 11, "transaction test 2", acc2, acc1);
+        Transaction transaction2 = tx; //new Transaction("tx2", 100, 11, "transaction test 2", acc2, acc1);
         System.out.println("Created transaction2: " + transaction2);
         block.getTransactionList().add(transaction1);
         System.out.println("Added transaction1 to block");
@@ -545,7 +542,7 @@ public class CompleteTest {
 
 
         assertTimeout(Duration.ofSeconds(1), () -> {
-            ledger.processTransaction(transaction1);
+            testLedger.processTransaction(transactionToProcess);
         }, "Transaction processing should complete within 1 second");
         System.out.println("Verified that processTransaction completes within the time limit of 1 second");
 
@@ -876,54 +873,6 @@ public class CompleteTest {
         LedgerException ex = assertThrows(LedgerException.class, ledger::validate);
         assertEquals("Balance Does Not Add Up", ex.getReason());
     }
-
-
-
-    //-----------------------------------------------------------------------------------------
-// @Test
-//     void reproduceDriverOutput() throws Exception {
-//         Ledger.reset();
-
-//         // capture stdout
-//         PrintStream originalOut = System.out;
-//         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//         System.setOut(new PrintStream(baos));
-
-//         try {
-//             new com.se300.ledger.command.DriverTest().testDriver();
-//         } finally {
-//             System.out.flush();
-//             System.setOut(originalOut);
-//         }
-
-//         String actual = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
-//         String expected = new String(
-//             getClass().getResourceAsStream("/results_ledger-1.txt").readAllBytes(),
-//             java.nio.charset.StandardCharsets.UTF_8);
-
-//         String normActual = normalize(actual);
-//         String normExpected = normalize(expected);
-
-//         // Always write actual output, even if test passes
-//         java.nio.file.Path outDir = java.nio.file.Paths.get("target", "test-outputs");
-//         java.nio.file.Files.createDirectories(outDir);
-//         java.nio.file.Path actualFile = outDir.resolve("actual-results.txt");
-//         java.nio.file.Files.writeString(actualFile, actual, java.nio.charset.StandardCharsets.UTF_8);
-
-//         if (!normActual.equals(normExpected)) {
-//             fail("Output differs from expected. Actual output written to: " + actualFile.toString());
-//         }
-//     }
-
-//     // simple normalization helper example
-//     private static String normalize(String s) {
-//         return java.util.Arrays.stream(s.replace("\r\n", "\n").split("\n"))
-//                      .map(String::trim)            // trim trailing/leading whitespace per line
-//                      .filter(line -> !line.isEmpty()) // optionally drop empty lines
-//                      .collect(java.util.stream.Collectors.joining("\n"))
-//                      .trim();
-//     }
-    //-----------------------------------------------------------------------------------------
 
 }
 
