@@ -46,7 +46,8 @@ public class Ledger {
      * @param description
      * @param seed
      */
-    private Ledger(String name, String description, String seed) {
+    // Adjusted to public for testing cases
+    public Ledger(String name, String description, String seed) {
         this.name = name;
         this.description = description;
         this.seed = seed;
@@ -348,6 +349,7 @@ public class Ledger {
      * Helper method allowing reset the state of the Ledger
      */
     public static synchronized void reset(){
+        ledger = null; //wipes singleton instance
         blockMap = new TreeMap<>();
         uncommittedBlock = new Block(1, "");
         uncommittedBlock.addAccount("master", new Account("master", Integer.MAX_VALUE));
