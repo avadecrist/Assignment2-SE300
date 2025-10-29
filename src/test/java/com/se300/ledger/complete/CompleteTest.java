@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.RepeatedTest;
@@ -59,22 +63,23 @@ public class CompleteTest {
         // Using createAccount() from Ledger class to test if accounts can be created with different names
 
         // Resets ledger
-        Ledger.reset();
+       Ledger.reset();
 
         // Creates new ledger
-        Ledger ledger = Ledger.getInstance("myTest", "Testing createAccount", "randomSeed");
+       Ledger ledger = Ledger.getInstance("myTest", "Testing createAccount", "randomSeed");
+       System.out.println("name: " + ledger.getName()+ " description: " + ledger.getDescription() + " seed: " + ledger.getSeed());
 
         // Creates an account and catches exception if thrown
         Account account = assertDoesNotThrow(() -> ledger.createAccount(value), "Should not throw exception for valid account names");
 
         // Basic Assertions
         assertNotNull(account, "Account should be successfully created.");
-        assertEquals(value, account.getAddress(), "Account address should match the provided value"); 
-        assertEquals(0, account.getBalance(), "Account balance should be 0");  
+        assertEquals(value, account.getAddress(), "Account address should match the provided value");
+        assertEquals(0, account.getBalance(), "Account balance should be 0");
         assertEquals("myTest", ledger.getName(), "Ledger address should match");
         assertEquals("Testing createAccount", ledger.getDescription(), "Ledger description should match.");
         assertEquals("randomSeed", ledger.getSeed(), "Ledger seed should match.");
-    }   
+    }
 
     @ParameterizedTest
     @CsvSource({"Awoh, 650", "Ava, 475", "Zach, 560", "Kal, 970"})
@@ -161,86 +166,94 @@ public class CompleteTest {
 
     //for Zach's code. Please check Singleton! not a permanent fix, just does not compile without it so throwing this here for now.
     private Ledger testLedger;
+    private static boolean beforeAllRan = false; // track if @BeforeAll ran in lifecycle test
+    private static boolean afterAllRan = false; // track if @AfterAll ran in lifecycle test
+    private static Account payer; // shared account for all tests
+    private static Account receiver; // shared account for all tests
+    private static Transaction tx; // shared transaction for all tests
+    private static int beforeEachCount;
+    private static int afterEachCount;
 
+    @BeforeAll
+    public static void setUpAll() {
+        System.out.println("@BeforeAll - Set up shared resources for all tests");
+        beforeAllRan = true;
+
+        // Initialize the shared transaction that will be used by all tests
+        payer = new Account("payer", 1000);
+        receiver = new Account("receiver", 500);
+        tx = new Transaction("tx", 100, 10, "Shared transaction across all tests", payer, receiver);
+
+        // Initialize counts
+        beforeEachCount = 0;
+        afterEachCount = 0;
+
+    }
+
+    @BeforeEach
     void setUp() {
         // TODO: Complete this setup method for lifecycle demonstration
         System.out.println("This method is executed before each test method");
-        // Create a new user for each test; based on a selected class, create an object to test with
-
-        // Let's test based on Ledger, and Name, Description and Seed
-        // public testName = new name;
-        // public testDescription;
-        // public testSeed;
-
-        // Declare here? Or at top? (at top)
-        // Ledger testLedger;
-
-        testLedger = new Ledger("Ava", "testDescription", "testSeed");
-
-        // get Intsance Method, as well as getters
-
-
-        // This class will be used in lifeCycleTest; so it keeps the same focus
-
+        Ledger.reset();
+        testLedger = Ledger.getInstance("myTest", "Testing Unit Tests", "randomSeed");
+        beforeEachCount++; // keep track of how many times BeforeEach has run
     }
 
-    
+    @AfterEach
     void tearDown() {
         // TODO: Complete this teardown method for lifecycle demonstration
-
         System.out.println("Cleaning up Test Methods");
 
-        // Make test object(s) null
+        // Make test object null
         testLedger = null;
+        Ledger.reset();
+        afterEachCount++; // keep track of how many times AfterEach has run
     }
 
-    
+    @AfterAll
+    public static void tearDownAll() {
+        System.out.println("@AfterAll - This method is executed once after all test methods");
+        afterAllRan = true;
+        // Clean up the shared account
+        payer = null;
+        receiver = null;
+        tx = null;
+    }
+
+    @Test
+    @Order(4) //order this very last after all our tests are finalized
     void lifeCycleTest() {
         // TODO: Complete this test to demonstrate test lifecycle with BeforeEach, AfterEach, BeforeAll, AfterAll
-        //@BeforeEach
-            // use setUp method to set up each test before
-            
-
-        //@BeforeAll
-        // Prepare for all tests
-        // setup a sharedLedger
         
+        // Verify that @BeforeAll has run and @AfterAll has not yet run
+        assertTrue(beforeAllRan, "@BeforeAll should have run before any tests");
+        assertFalse(afterAllRan, "@AfterAll should not have run before any tests");
 
-        //@BeforeEach
-        // use setUp method here! Setup tests
-        setUp();
-    
+        // Verify that @BeforeEach has run before each test
+        assertEquals(beforeEachCount, afterEachCount + 1, "@BeforeEach should have run before this test, and @AfterEach should not have run yet");
+        // Verify that @AfterEach has run before each test
+        assertEquals(afterEachCount, beforeEachCount - 1, "@AfterEach still needs to run after this test, so its count should be 1 less than @BeforeEach count");
 
-        //@Test
-        // Run tests here!!
-        // Primarily, make sure both testLedger and sharedLedger are initialized correctly
-
-        // First, output the name, description and seed based on getters
-        System.out.println("Testing Accessors for Ledger...");
-        System.out.println("Test name: " + testLedger.getName());
-        System.out.println("Description name: " + testLedger.getDescription());
-        System.out.println("Seed name: " + testLedger.getSeed());
-
-        // Second, test the mutators, and output the new values
-        System.out.println("Testing Mutators for Ledger...");
-        testLedger.setName("Kal");
-        System.out.println("Test name: " + testLedger.getName());
-        testLedger.setDescription("New description");
-        System.out.println("Description name: " + testLedger.getDescription());
-        testLedger.setSeed("newSeed");
-        System.out.println("Seed name: " + testLedger.getSeed());
-
-
-        //@AfterEach
-        // use tearDown method to clean up specific test
-        tearDown();
-
-
-        //@AfterAll
-        // Clean up all tests
-        // set sharedLedger to null
+        // Primarily, make sure testLedger and shared variables (tx, payer, receiver) are initialized correctly
+        assertNotNull(testLedger, "testLedger should be initialized by @BeforeEach");
         
-            //Use @BeforeEach for Ledger.reset() before each test HERE or in methodOrderTest()?
+        tx.setTransactionId("newId");
+        assertEquals("newId", tx.getTransactionId(), "Getter for transactionId should equal the newly set transactionId value");
+        
+        tx.setAmount(500);  
+        assertNotEquals(100, tx.getAmount(), "Getter for amount should reflect the newly set amount value");
+
+        tx.setFee(25);
+        assertEquals(25, tx.getFee(), "Getter for fee should equal the newly set fee value");
+
+        tx.setNote("Updated note");
+        assertEquals("Updated note", tx.getNote(), "Getter for note should equal the newly set note value");
+
+        tx.setPayer(receiver);
+        assertEquals(receiver, tx.getPayer(), "Receiver should now be set to be the Payer");
+
+        tx.setReceiver(payer);
+        assertEquals(payer, tx.getReceiver(), "Payer should now be set to be the Receiver");
     }
 
     

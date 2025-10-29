@@ -349,6 +349,7 @@ public class Ledger {
      * Helper method allowing reset the state of the Ledger
      */
     public static synchronized void reset(){
+        ledger = null; //wipes singleton instance
         blockMap = new TreeMap<>();
         uncommittedBlock = new Block(1, "");
         uncommittedBlock.addAccount("master", new Account("master", Integer.MAX_VALUE));
