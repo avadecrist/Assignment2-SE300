@@ -966,6 +966,45 @@ public class CompleteTest {
         assertEquals("Balance Does Not Add Up", ex.getReason());
     }
 
+    @Test
+    @Order(3)
+    void validateBalanceMatchSuccess() throws Exception {
+        System.out.println("\n--- [3] Testing validate() passes successfully ---");
+
+        // Reset and get new instance
+        Ledger.reset();
+        Ledger ledger = Ledger.getInstance("ValidateTest3", "Balance pass", "seed");
+
+        // Create a valid block with proper data (one of the throw exceptions)
+        Block b1 = new Block(1, "");
+        b1.setHash("GOOD_HASH");
+
+        // Create exactly 10 transactions with 0 fees so the math is simple (another of the exceptions)
+        for (int i = 0; i < 10; i++) {
+            b1.getTransactionList().add(
+                new Transaction("txC" + i, 0, 0, "t",
+                    new Account("Kal" + i, 0),
+                    new Account("AB" + i, 0))
+            );
+        }
+
+        // Make sure account balances add up to Integer.MAX_VALUE
+        Account testAccount = new Account("test", Integer.MAX_VALUE);
+        b1.addAccount("test", testAccount);
+
+        // Place block in map
+        var blockMap = new TreeMap<Integer, Block>();
+        blockMap.put(1, b1);
+
+        // Use reflection to inject the blockMap into Ledger
+        var field = Ledger.class.getDeclaredField("blockMap");
+        field.setAccessible(true);
+        field.set(null, blockMap);
+
+        // Should NOT throw any exception now (Yippee!)
+        assertDoesNotThrow(ledger::validate);
+    }
+
 }
 
 
