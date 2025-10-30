@@ -57,6 +57,20 @@ public class CompleteTest {
      */ 
 
 
+    // For Lifycle Test
+    private Ledger testLedger;
+    private static boolean beforeAllRan = false; // track if @BeforeAll ran in lifecycle test
+    private static boolean afterAllRan = false; // track if @AfterAll ran in lifecycle test
+    private static Account payer; // shared account for all tests
+    private static Account receiver; // shared account for all tests
+    private static Transaction tx; // resets before each test
+    private static int beforeEachCount;
+    private static int afterEachCount;
+
+    // For Method Order Test
+    private static List<String> executionOrder = new ArrayList<>();
+
+
     @ParameterizedTest
     @ValueSource(strings = {"Awoh", "Ava", "Zach", "Kal"})
     void parameterizedValueSourcesTest(String value) {
@@ -114,9 +128,6 @@ public class CompleteTest {
     void parameterizedComplexSourcesTest(String str, int num) {
         // Using Account class
 
-        // Resets ledger
-        Ledger.reset();
-
         // Creates an account
         Account account = new Account(str, num);
 
@@ -145,8 +156,9 @@ public class CompleteTest {
 
     @RepeatedTest(4)
     void repeatedTest() {
-        // Resets Ledger
-        Ledger.reset();
+
+        // add to execution order
+        executionOrder.add("repeatedTest");
 
         // Necessary variables
         int blockNum = (int) (Math.random() * 100) + 1;
@@ -192,16 +204,6 @@ public class CompleteTest {
         assertEquals(testAccount.getBalance(), retrievedAccount.getBalance(), "Retrieved account balance should have the same balance as test account");
     }
 
-    //for Zach's code. Please check Singleton! not a permanent fix, just does not compile without it so throwing this here for now.
-    private Ledger testLedger;
-    private static boolean beforeAllRan = false; // track if @BeforeAll ran in lifecycle test
-    private static boolean afterAllRan = false; // track if @AfterAll ran in lifecycle test
-    private static Account payer; // shared account for all tests
-    private static Account receiver; // shared account for all tests
-    private static Transaction tx; // resets before each test
-    private static int beforeEachCount;
-    private static int afterEachCount;
-
     @BeforeAll
     public static void setUpAll() {
         System.out.println("@BeforeAll - Set up shared resources for all tests");
@@ -211,10 +213,12 @@ public class CompleteTest {
         payer = new Account("payer", 1000);
         receiver = new Account("receiver", 500);
     
-
         // Initialize counts
         beforeEachCount = 0;
         afterEachCount = 0;
+
+        // Initialize the execution order list
+        executionOrder.clear();
 
     }
 
@@ -243,13 +247,16 @@ public class CompleteTest {
     public static void tearDownAll() {
         System.out.println("@AfterAll - This method is executed once after all test methods");
         afterAllRan = true;
+
+
         // Clean up the shared account
         payer = null;
         receiver = null;
+        executionOrder.clear();
     }
 
     @Test
-    @Order(5) //order this very last after all our tests are finalized
+    @Order(15) //order this very last after all our tests are finalized
     void lifeCycleTest() {
         // TODO: Complete this test to demonstrate test lifecycle with BeforeEach, AfterEach, BeforeAll, AfterAll
         
@@ -285,11 +292,15 @@ public class CompleteTest {
     }
 
     @Test
+    @Order(5)
     void conditionalTest() {
         // TODO: Complete this test to demonstrate conditional test execution based on condition
 
         // Output a print statement for when test starts
         System.out.println("Running conditionalMerkleTreeTest...");
+
+        // add to execution order
+        executionOrder.add("conditionalTest");
 
         // Create a transactions ArrayList for testing
         List<String> transactions = new ArrayList<>();
@@ -322,8 +333,13 @@ public class CompleteTest {
     // Tagged Tests
     @Tag("Check MerkleTrees Functionality")
     @Test
+    @Order(6)
     void taggedTest() {
         // TODO: Complete this test to demonstrate test tagging for selective execution
+
+        // add to execution order
+        executionOrder.add("taggedTest");
+
         List<String> txs = Arrays.asList("A", "B", "C", "D");
         MerkleTrees tree = new MerkleTrees(txs);
         tree.merkle_tree();
@@ -334,10 +350,14 @@ public class CompleteTest {
 
     @Tag("processTransaction Block Test")
     @Test
+    @Order(7)
     void taggedTestProcessTransaction() throws Exception {
         // Reset ledger
         Ledger.reset();
         Ledger ledger = Ledger.getInstance("TagTest", "Block Commit Verification", "seedXYZ");
+
+        // add to execution order
+        executionOrder.add("taggedTestProcessTransaction");
 
         // Create payer and receiver accounts
         Account payer = ledger.createAccount("payer");
@@ -413,11 +433,15 @@ public class CompleteTest {
      * Test that the Block model can be created and used correctly.
      */
     @Test
+    @Order(8)
     void basicAssertionsTest() {
         // TODO: Complete this test to demonstrate basic assertions (assertEquals, assertTrue, assertFalse, assertNull, assertNotNull)
         // TODO: At least 5 different basic assertions
 
         System.out.println("\n==========================================================\nStarting basicAssertionsTest...");
+
+        // add to execution order
+        executionOrder.add("basicAssertionsTest");
     
         // Create a block and check its properties:
         System.out.println("Creating a block to test its properties");
@@ -470,10 +494,12 @@ public class CompleteTest {
      * Test that the Account model can be created and used correctly.
      */
     @Test
+    @Order(9)
     void advancedAssertionsTest() throws LedgerException {
         System.out.println("\n==========================================================\nStarting advancedAssertionsTest...");
-        //Ledger.reset(); 
-        //Ledger ledger = Ledger.getInstance("test", "desc", "seed");
+        
+        // add to execution order
+        executionOrder.add("advancedAssertionsTest");
 
         // 1. Test duplicate account creation throws exception
         System.out.println("Testing if duplicate account creation throws LedgerException");
@@ -589,14 +615,15 @@ public class CompleteTest {
      * Test demonstrating configuring mock behavior for Transactions, MerkleTree, and Ledger (when/then, doReturn/when, etc.)
      */
     @Test
+    @Order(10)
     void mockBehaviorTest() throws LedgerException{
         // TODO: Complete this test to demonstrate configuring mock behavior (when/then, doReturn/when, etc.)
         // TODO: At least 3 different behaviors
 
         System.out.println("\n==========================================================\nStarting mockBehaviorTest...");
-        // Create a mock Ledger
-        //Ledger.reset();
-        //Ledger ledger = Ledger.getInstance("Main", "Mock Test Ledger", "seed123");
+        
+        // add to execution order
+        executionOrder.add("mockBehaviorTest");
 
         // 1: Mock a Transaction and define behavior
         Transaction mockTx = mock(Transaction.class);
@@ -669,12 +696,16 @@ public class CompleteTest {
      * Test LedgerExceptions in processTransaction and validate method in Ledger Class
      */
     @Test
+    @Order(11)
     void assumptionsTest() throws LedgerException{
         // TODO: Complete this test to demonstrate using assumptions (assumeTrue, assumeFalse, assumingThat, etc.)
         // TODO: At least 3 different assumptions
 
         //ASSUMETRUE
         System.out.println("\n==========================================================\nStarting assumptionsTest...");
+
+        // add to execution order
+        executionOrder.add("assumptionsTest");
 
         System.out.println("Assuming it's true that a ledger instance is initialized:");
         assumeTrue(testLedger != null, 
@@ -802,7 +833,11 @@ public class CompleteTest {
     }
 
     @Test
+    @Order(12)
     void mockVerificationTest() {
+        // add to execution order
+        executionOrder.add("mockVerificationTest");
+
         // Create mock transaction
         Transaction mockTransaction = mock(Transaction.class);
         
@@ -854,10 +889,14 @@ public class CompleteTest {
     }
 
     @Test
+    @Order(13)
     void mockArgumentMatchersTest() {
         // TODO: Complete this test to demonstrate using argument matchers with mocks (any(), eq(), etc.)
         // TODO: At least 3 different argument matchers
          System.out.println("\n--- Running mockArgumentMatchersTest for MerkleTrees ---");
+
+         // add to execution order
+        executionOrder.add("mockArgumentMatchersTest");
 
             // Spy instead of pure mock so we still use real behavior unless overridden
         MerkleTrees spyTree = Mockito.spy(new MerkleTrees(Arrays.asList("a", "b")));
@@ -874,13 +913,35 @@ public class CompleteTest {
         verify(spyTree, atLeast(1)).getSHA2HexValue(anyString());  
     }
 
-    //kal
+    @Test
+    @Order(14)
     void methodOrderTest() {
         // TODO: Complete this test to demonstrate test method ordering using @TestMethodOrder and @Order annotations
-            // Use @TestMethodOrder(MethodOrderer.OrderAnnotation.class) at the top of CompleteTest Class level?
-            // Order all the unit tests accordingly
-            // use methodOrderTest to verify the ordering happened as planned (refer to verifyExecutionOrder method in ex. repo)
-            //for merkletrees
+            
+        System.out.println("\n--- Running methodOrderTest to verify execution order ---");
+
+        // Add the test name to the execution order list
+        executionOrder.add("methodOrderTest");
+
+        // Verify the execution order
+        List<String> expectedOrder = List.of(
+            "validateTransactionCountFail",
+            "validateHashInconsistentFail",
+            "validateBalanceMismatchFail",
+            "validateBalanceMatchSuccess",
+            "conditionalTest",
+            "taggedTest",
+            "taggedTestProcessTransaction",
+            "basicAssertionsTest",
+            "advancedAssertionsTest",
+            "mockBehaviorTest",
+            "assumptionsTest",
+            "mockVerificationTest",
+            "mockArgumentMatchersTest",
+            "methodOrderTest"
+        );
+
+        assertEquals(expectedOrder, executionOrder, "Tests should be executed in the correct order");
 
     }
 
@@ -889,8 +950,9 @@ public class CompleteTest {
     @Order(1)
     void validateTransactionCountFail() throws Exception {
         System.out.println("\n--- [1] Testing validate() transaction count failure ---");
-        Ledger.reset();
-        Ledger ledger = Ledger.getInstance("ValidateTest1", "Transaction Count Fail", "seed");
+
+        // Add the test name to the execution order list
+        executionOrder.add("validateTransactionCountFail");
 
         // Create a block with <10 transactions
         Block b1 = new Block(1, "");
@@ -906,7 +968,7 @@ public class CompleteTest {
         field.setAccessible(true);
         field.set(null, blockMap);
 
-        LedgerException ex = assertThrows(LedgerException.class, ledger::validate);
+        LedgerException ex = assertThrows(LedgerException.class, testLedger::validate);
         assertTrue(ex.getReason().contains("Transaction Count Is Not 10"));
     }
 
@@ -914,8 +976,12 @@ public class CompleteTest {
     @Order(2)
     void validateHashInconsistentFail() throws Exception {
         System.out.println("\n--- [2] Testing validate() hash inconsistency failure ---");
-        Ledger.reset();
-        Ledger ledger = Ledger.getInstance("ValidateTest2", "Hash fail", "seed");
+
+        // Add the test name to the execution order list
+        executionOrder.add("validateHashInconsistentFail");
+
+        // Ledger.reset();
+        // Ledger ledger = Ledger.getInstance("ValidateTest2", "Hash fail", "seed");
 
         Block b1 = new Block(1, "");
         b1.setHash("AAA");
@@ -936,7 +1002,7 @@ public class CompleteTest {
         field.setAccessible(true);
         field.set(null, blockMap);
 
-        LedgerException ex = assertThrows(LedgerException.class, ledger::validate);
+        LedgerException ex = assertThrows(LedgerException.class, testLedger::validate);
         assertTrue(ex.getReason().contains("Hash Is Inconsistent"));
     }
 
@@ -944,8 +1010,9 @@ public class CompleteTest {
     @Order(3)
     void validateBalanceMismatchFail() throws Exception {
         System.out.println("\n--- [3] Testing validate() balance mismatch failure ---");
-        Ledger.reset();
-        Ledger ledger = Ledger.getInstance("ValidateTest3", "Balance fail", "seed");
+
+        // Add the test name to the execution order list
+        executionOrder.add("validateBalanceMismatchFail");
 
         Block b1 = new Block(1, "");
         b1.setHash("GOOD_HASH");
@@ -962,18 +1029,17 @@ public class CompleteTest {
         field.setAccessible(true);
         field.set(null, blockMap);
 
-        LedgerException ex = assertThrows(LedgerException.class, ledger::validate);
+        LedgerException ex = assertThrows(LedgerException.class, testLedger::validate);
         assertEquals("Balance Does Not Add Up", ex.getReason());
     }
 
     @Test
-    @Order(3)
+    @Order(4)
     void validateBalanceMatchSuccess() throws Exception {
-        System.out.println("\n--- [3] Testing validate() passes successfully ---");
+        System.out.println("\n--- Testing validate() passes successfully ---");
 
-        // Reset and get new instance
-        Ledger.reset();
-        Ledger ledger = Ledger.getInstance("ValidateTest3", "Balance pass", "seed");
+        // Add the test name to the execution order list
+        executionOrder.add("validateBalanceMatchSuccess");
 
         // Create a valid block with proper data (one of the throw exceptions)
         Block b1 = new Block(1, "");
@@ -1001,8 +1067,8 @@ public class CompleteTest {
         field.setAccessible(true);
         field.set(null, blockMap);
 
-        // Should NOT throw any exception now (Yippee!)
-        assertDoesNotThrow(ledger::validate);
+        // Should NOT throw any exception 
+        assertDoesNotThrow(testLedger::validate);
     }
 
 }
