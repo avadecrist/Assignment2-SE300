@@ -24,10 +24,8 @@ import static org.junit.jupiter.api.Assumptions.*;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.*;
 import org.mockito.MockedStatic;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.ArgumentMatchers.*;
 
-import java.util.Map;
+import static org.mockito.ArgumentMatchers.*;
 
 // ─── Java standard libraries ────────────────────────────────────
 import java.io.*;
@@ -286,7 +284,7 @@ public class CompleteTest {
         assertEquals(payer, tx.getReceiver(), "Payer should now be set to be the Receiver");
     }
 
-    
+    @Test
     void conditionalTest() {
         // TODO: Complete this test to demonstrate conditional test execution based on condition
 
@@ -298,10 +296,10 @@ public class CompleteTest {
         transactions.add("tx1");
         transactions.add("tx2");
 
-        if (transactions.isEmpty()) {
-            System.out.println("Skipping test — transaction list is empty.");
-            return;
-        }
+
+        // Check if the transactions ArrayList is empty
+        assumeFalse(transactions.isEmpty(), 
+            "Skipping test — transaction list is empty.");
 
         // Create a test MerkleTrees tree for testing
         MerkleTrees tree = new MerkleTrees(transactions);
@@ -309,11 +307,11 @@ public class CompleteTest {
 
         // Test the tree
         String root = tree.getRoot();
-        if (root == null || root.isEmpty()) {
-            System.out.println("Test Error: Root was not generated.");
-        } else {
-            System.out.println("Test Success! Merkle root generated successfully: " + root);
-        }
+
+        assertNotNull(root, "Test Error: Merkle root should not be null");
+        assertFalse(root.isEmpty(), "Test Error: Merkle root should not be empty");
+        assertEquals(64, root.length(), "Merkle root should be 64 hex characters long");
+
 
         // Set variables to null to clean up the test
         tree = null;
