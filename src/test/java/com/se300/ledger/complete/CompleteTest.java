@@ -200,7 +200,7 @@ public class CompleteTest {
     private static boolean afterAllRan = false; // track if @AfterAll ran in lifecycle test
     private static Account payer; // shared account for all tests
     private static Account receiver; // shared account for all tests
-    private static Transaction tx; // shared transaction for all tests
+    private static Transaction tx; // resets before each test
     private static int beforeEachCount;
     private static int afterEachCount;
 
@@ -212,7 +212,7 @@ public class CompleteTest {
         // Initialize the shared transaction that will be used by all tests
         payer = new Account("payer", 1000);
         receiver = new Account("receiver", 500);
-        tx = new Transaction("tx", 100, 10, "Shared transaction across all tests", payer, receiver);
+    
 
         // Initialize counts
         beforeEachCount = 0;
@@ -226,6 +226,7 @@ public class CompleteTest {
         System.out.println("This method is executed before each test method");
         Ledger.reset();
         testLedger = Ledger.getInstance("myTest", "Testing Unit Tests", "randomSeed");
+        tx = new Transaction("tx", 100, 10, "Shared transaction across all tests", payer, receiver);
         beforeEachCount++; // keep track of how many times BeforeEach has run
     }
 
@@ -236,7 +237,7 @@ public class CompleteTest {
 
         // Make test object null
         testLedger = null;
-        Ledger.reset();
+        tx = null;
         afterEachCount++; // keep track of how many times AfterEach has run
     }
 
@@ -247,11 +248,10 @@ public class CompleteTest {
         // Clean up the shared account
         payer = null;
         receiver = null;
-        tx = null;
     }
 
     @Test
-    @Order(4) //order this very last after all our tests are finalized
+    @Order(5) //order this very last after all our tests are finalized
     void lifeCycleTest() {
         // TODO: Complete this test to demonstrate test lifecycle with BeforeEach, AfterEach, BeforeAll, AfterAll
         
@@ -492,8 +492,8 @@ public class CompleteTest {
 
         // setting up accounts as blockchain
         System.out.println("Setting up accounts as blocks to further test account properties");
-        Account acc1 = payer; //testLedger.createAccount("ava"); //use payer and reciever?
-        Account acc2 = receiver; //testLedger.createAccount("kalyan");
+        Account acc1 = payer; 
+        Account acc2 = receiver;
         Block block = new Block(3, "prev-hash-number");
         block.addAccount(acc1.getAddress(), acc1);
         block.addAccount(acc2.getAddress(), acc2);
@@ -506,6 +506,7 @@ public class CompleteTest {
             () -> assertNotEquals(acc1.getAddress(), acc2.getAddress(), "Different accounts should have different addresses"),
             () -> assertEquals(block.getAccount(acc1.getAddress()), acc1, "The account retrieved from block should match the one added")
         );
+
 
         // 4. Use assertIterableEquals() to verify two lists of transactions are the same
         System.out.println("Verifying two lists of transactions are the same:");
@@ -546,6 +547,44 @@ public class CompleteTest {
         }, "Transaction processing should complete within 1 second");
         System.out.println("Verified that processTransaction completes within the time limit of 1 second");
 
+        // 6. Assert blocks are validated correctly after being filled and committed
+        System.out.println("Testing block validation after filling and committing a block");
+
+        // make a blockmap with 10 transactions to allow validate() to run without exception
+        System.out.println("Filling uncommitted block with 10 transactions to trigger block to commit and allow validate()");
+
+        Account a1 = testLedger.createAccount("A1");
+        Account a2 = testLedger.createAccount("A2");
+        a1.setBalance(10000);
+        a2.setBalance(0);
+
+        for (int i = 0; i < 10; i++) {
+            Transaction addTx = new Transaction("tx-" + i, 1, 10, "description", a1, a2);
+            System.out.println("add transaction " + addTx.toString());
+            testLedger.processTransaction(addTx);
+        }
+    
+        assertEquals(testLedger.getTransaction("tx-0").getTransactionId(), "tx-0", "First transaction ID should be 'tx-0'");
+
+        assertTrue(testLedger.getAccountBalance("A2") >= 10, "Receiver A2 should have received at least 10 from 10 transactions of amount 1");
+        System.out.println("Uncommitted block filled and committed successfully. Now calling validate() should work without exceptions.");
+
+        assertDoesNotThrow(() -> {
+            testLedger.getAccountBalances();
+        }, "Should be able to get account balances after blocks are committed.");
+
+        LedgerException e = assertThrows(LedgerException.class, () -> testLedger.getAccountBalance("non-existent account"),
+        "Should throw exception for non-existent account after blocks are committed");
+        assertTrue(e.getReason().contains("Account Does Not Exist"));
+
+        assertDoesNotThrow(() -> {
+            testLedger.getBlock(1);
+        }, "Should be able to access a committed block");
+
+        LedgerException blockException = assertThrows(LedgerException.class, () -> testLedger.getBlock(0),
+        "Should throw exception for non-existent block index in blockMap");
+        assertTrue(blockException.getReason().contains("Block Does Not Exist"));
+
     }
 
     /**
@@ -558,8 +597,8 @@ public class CompleteTest {
 
         System.out.println("\n==========================================================\nStarting mockBehaviorTest...");
         // Create a mock Ledger
-        Ledger.reset();
-        Ledger ledger = Ledger.getInstance("Main", "Mock Test Ledger", "seed123");
+        //Ledger.reset();
+        //Ledger ledger = Ledger.getInstance("Main", "Mock Test Ledger", "seed123");
 
         // 1: Mock a Transaction and define behavior
         Transaction mockTx = mock(Transaction.class);
@@ -582,8 +621,8 @@ public class CompleteTest {
         when(mockReceiver.getAddress()).thenReturn("receiver");
 
         // Add accounts to uncommitted block to simulate real use
-        ledger.getUncommittedBlock().addAccount("payer", mockPayer);
-        ledger.getUncommittedBlock().addAccount("receiver", mockReceiver);
+        testLedger.getUncommittedBlock().addAccount("payer", mockPayer);
+        testLedger.getUncommittedBlock().addAccount("receiver", mockReceiver);
 
         // 2. Use doReturn(...).when(...) for method that would normally compute
         System.out.println("Setting up mock MerkleTrees behavior using doReturn/when");
@@ -592,7 +631,7 @@ public class CompleteTest {
 
         // 3. Spy on Ledger and override one of its methods
         System.out.println("Creating a spy Ledger to override getNumberOfBlocks method");
-        Ledger spyLedger = spy(ledger);
+        Ledger spyLedger = spy(testLedger);
         // First cover getNumberOfBlocks method
         doCallRealMethod().when(spyLedger).getNumberOfBlocks();
         int numberOfBlocks = spyLedger.getNumberOfBlocks();
@@ -638,31 +677,29 @@ public class CompleteTest {
 
         //ASSUMETRUE
         System.out.println("\n==========================================================\nStarting assumptionsTest...");
-        Ledger.reset();
-        Ledger ledger = Ledger.getInstance("test", "desc", "seed");
 
         System.out.println("Assuming it's true that a ledger instance is initialized:");
-        assumeTrue(ledger != null, 
+        assumeTrue(testLedger != null, 
                 "Skipping test because ledger does not have an instance");
 
         // create test accounts
-        Account user1 = ledger.createAccount("payer");
-        Account user2 = ledger.createAccount("receiver");
+        Account user1 = payer;
         user1.setBalance(500);
+        Account user2 = receiver;
         user2.setBalance(550);
 
-        // create a valid transaction
-        System.out.println("Creating a valid transaction between user1 and user2 to test processTransaction results:");
-        Transaction transaction = new Transaction("tx1", 100, 20, "test payment", user1, user2);
+        // use valid transaction
+        System.out.println("Testing processTransaction results:");
+        Transaction transaction = tx; //new Transaction("tx1", 100, 20, "test payment", user1, user2);
         
         //Store the outcome of processing a transaction as a String
-        String processedTransaction = ledger.processTransaction(transaction);
+        String processedTransaction = testLedger.processTransaction(transaction);
         System.out.println("Processed Transaction: " + processedTransaction);
 
         // Assertions will be executed if the assumption passes
         assertAll("Verify transaction processing results",
-            () -> assertEquals("tx1", transaction.getTransactionId(), "Transaction ID should match"),
-            () -> assertEquals(380, user1.getBalance(), "Payer balance should decrease by amount + fee"),
+            () -> assertEquals("tx", transaction.getTransactionId(), "Transaction ID should match"),
+            () -> assertEquals(390, user1.getBalance(), "Payer balance should decrease by amount + fee"),
             () -> assertEquals(650, user2.getBalance(), "Receiver balance should increase by amount"),
             () -> assertTrue(transaction.getFee() >= 10, "Transaction fee must meet the minimum requirement")
         );
@@ -671,42 +708,99 @@ public class CompleteTest {
         //ASSUMEFALSE
         System.out.println("\n-----------------------------------------------------\nAssuming transaction list size from uncommitted block is NOT 10:");
 
-        Block uncommittedBlock = ledger.getUncommittedBlock();
+        Block uncommittedBlock = testLedger.getUncommittedBlock();
         assumeFalse(uncommittedBlock.getTransactionList().size()== 10,
             "Skipping test: uncommitted block gets added to blockMap only after getTransactionList() reaches 10");
 
+        
         // executes if assumption is false
         //validate() will throw exceptions if called before the first block is committed, because they rely on blockMap.lastEntry()
         Transaction newTransaction = new Transaction("tx-new", 50, 15, "new test payment", user1, user2);
-        ledger.processTransaction(newTransaction); //process another transaction to ensure uncommitted block exists
+        testLedger.processTransaction(newTransaction); //process another transaction to ensure uncommitted block exists
         
         System.out.println("After processing another transaction, test to see if an exception is thrown because of the blockMap being empty ");
         LedgerException blockMapException = assertThrows(LedgerException.class, () -> {
-            ledger.validate();
+            testLedger.validate();
         });
 
         System.out.println("Exception caught as expected when calling validate() with empty block map: '" + blockMapException.getReason() + "'");
 
+        
 
         //ASSUMINGTHAT
         System.out.println("\n-----------------------------------------------------\nAssuming that user1 has insufficient funds to process another transaction:");
         
-        //try on new transaction
-        Transaction transaction2 = new Transaction("tx2", 450, 60, "test payment 2", user1, user2);
+        // try on transaction that makes payer have insufficient balance
+        Transaction transaction2 = new Transaction("tx2", 1000, 10, "test payment 2", user1, user2);
         assumingThat(user1.getBalance() < (transaction2.getAmount() + transaction2.getFee()), () -> {
             System.out.println("User1 balance: " + user1.getBalance() + " is less than transaction total: "
             + (transaction2.getAmount() + transaction2.getFee()) + ". Should throw a LedgerException.");
 
             LedgerException exception = assertThrows(LedgerException.class, () -> {
-                ledger.processTransaction(transaction2);
+                testLedger.processTransaction(transaction2);
             }, "Processing transaction with insufficient balance should throw LedgerException");
-            //System.out.println("LedgerException caught as expected: " + exception.getReason());
+            
             assertTrue(exception.getReason().contains("Payer Does Not Have Required Funds"),
             "Should throw LedgerException for insufficient balance");
             System.out.println("Real Reason: '" + exception.getReason() + "' matches Expected Reason: 'Payer Does Not Have Required Funds'.");
         });
-        
-        System.out.println("Verified assumingThat() LedgerException for insufficient balance successfully.");
+
+        // Assume invalid transaction parameters throw exceptions
+        System.out.println("\n-----------------------------------------------------\nAssuming invalid transaction parameters throw exceptions:");
+
+        Transaction invalidTransaction = new Transaction("tx-invalid", -100, 0, "invalid payment", user1, user2);
+        assumingThat(invalidTransaction.getAmount() < 0, () -> {
+            System.out.println("Invalid transaction amount: " + invalidTransaction.getAmount() + ". Should throw a LedgerException.");
+
+            LedgerException exception = assertThrows(LedgerException.class, () -> {
+                testLedger.processTransaction(invalidTransaction);
+            }, "Processing transaction with invalid amount should throw LedgerException");
+
+            assertTrue(exception.getReason().contains("Transaction Amount Is Out of Range"),
+            "Should throw LedgerException for invalid transaction amount");
+            System.out.println("Real Reason: '" + exception.getReason() + "' matches Expected Reason: 'Transaction Amount Is Out of Range'.");
+        });
+        invalidTransaction.setAmount(100); // reset amount to valid
+        assumingThat(invalidTransaction.getFee() < 10, () -> {
+            System.out.println("Invalid fee amount: " + invalidTransaction.getFee() + ". Should throw a LedgerException.");
+
+            LedgerException exception = assertThrows(LedgerException.class, () -> {
+                testLedger.processTransaction(invalidTransaction);
+            }, "Processing transaction with invalid fee should throw LedgerException");
+
+            assertTrue(exception.getReason().contains("Transaction Fee Must Be Greater Than 10"),
+            "Should throw LedgerException for invalid transaction fee");
+            System.out.println("Real Reason: '" + exception.getReason() + "' matches Expected Reason: 'Transaction Fee Must Be Greater Than 10'.");
+        });
+        invalidTransaction.setFee(15); // reset fee to valid
+        invalidTransaction.setNote("N".repeat(1025)); // set note length > 1024
+        assumingThat(invalidTransaction.getNote().length() > 1024, () -> {
+            System.out.println("Invalid note length: " + invalidTransaction.getNote().length() + ". Should throw a LedgerException.");
+
+            LedgerException exception = assertThrows(LedgerException.class, () -> {
+                testLedger.processTransaction(invalidTransaction);
+            }, "Processing transaction with invalid note length should throw LedgerException");
+
+            assertTrue(exception.getReason().contains("Note Length Must Be Less Than 1024 Chars"),
+            "Should throw LedgerException for invalid transaction note length");
+            System.out.println("Real Reason: '" + exception.getReason() + "' matches Expected Reason: 'Note Length Must Be Less Than 1024 Chars'.");
+        });
+        invalidTransaction.setNote("Valid note"); // reset note to valid
+        invalidTransaction.setTransactionId("tx"); // set to an existing transaction ID
+        assumingThat(invalidTransaction.getTransactionId() != null, () -> {
+            System.out.println("Invalid transaction ID: " + invalidTransaction.getTransactionId() + ". Should throw a LedgerException.");
+
+            LedgerException exception = assertThrows(LedgerException.class, () -> {
+                testLedger.processTransaction(invalidTransaction);
+            }, "Processing transaction with invalid transaction ID should throw LedgerException");
+
+            assertTrue(exception.getReason().contains("Transaction Id Must Be Unique"),
+            "Should throw LedgerException for invalid transaction ID");
+            System.out.println("Real Reason: '" + exception.getReason() + "' matches Expected Reason: 'Transaction ID Must Be Unique'.");
+        });
+
+
+        System.out.println("Verified assumingThat() LedgerException for invalid transaction successfully.");
     }
 
     @Test
